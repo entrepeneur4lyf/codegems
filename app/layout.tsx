@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { SavedProvider } from './saved/SavedContext'
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { Analytics } from "@vercel/analytics/react"
 
 export const metadata: Metadata = {
   title: 'Code Gems',
