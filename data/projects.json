@@ -1,0 +1,39 @@
+[
+    {
+      "name": "next.js",
+      "description": "The React Framework for Production",
+      "stars": "108k",
+      "forks": "24.5k",
+      "tags": ["react", "framework", "javascript"],
+      "url": "https://github.com/vercel/next.js"
+      
+    },
+    {
+      "name": "shadcn/ui",
+      "description": "Beautifully designed components built with Radix UI and Tailwind CSS",
+      "stars": "45.2k",
+      "forks": "2.1k",
+      "tags": ["react", "ui", "components"],
+      "url": "https://github.com/shadcn/ui"
+     
+    },
+    {
+      "name": "react-query",
+      "description": "Powerful asynchronous state management for React",
+      "stars": "34.8k",
+      "forks": "2k",
+      "tags": ["react", "state-management", "async"],
+      "url": "https://github.com/tanstack/query"
+      
+    },
+    {
+        "name": "cobalt",
+        "description": "cobalt is a media downloader that doesn't piss you off. it's friendly, efficient, and doesn't have ads, trackers, paywalls or other nonsense.",
+        "stars": "21.9k",
+        "forks": "1.8k",
+        "tags": ["music", "downloader", "video"],
+        "url": "https://github.com/imputnet/cobalt"
+        
+      }
+  ]
+  
