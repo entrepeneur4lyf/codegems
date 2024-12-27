@@ -123,8 +123,13 @@ export default function GithubProjectsPage() {
                           className={`text-gray-400 ${isSaved ? 'text-green-500' : 'hover:text-white'}`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            isSaved ? removeProject(project.name) : addProject(project.name);
+                            if (isSaved) {
+                              removeProject(project.name);
+                            } else {
+                              addProject(project.name);
+                            }
                           }}
+                          
                         >
                           {isSaved ? 'Unsave' : 'Save'}
                         </Button>
