@@ -28,6 +28,7 @@ export default function RootLayout({
           {children}
           </SavedProvider>
           <Footer />
+          <Analytics />
       </body>
     </html>
   )
