@@ -1,32 +1,5 @@
 [
     {
-      "name": "next.js",
-      "description": "The React Framework for Production",
-      "stars": "108k",
-      "forks": "24.5k",
-      "tags": ["react", "framework", "javascript"],
-      "url": "https://github.com/vercel/next.js"
-      
-    },
-    {
-      "name": "shadcn/ui",
-      "description": "Beautifully designed components built with Radix UI and Tailwind CSS",
-      "stars": "45.2k",
-      "forks": "2.1k",
-      "tags": ["react", "ui", "components"],
-      "url": "https://github.com/shadcn/ui"
-     
-    },
-    {
-      "name": "react-query",
-      "description": "Powerful asynchronous state management for React",
-      "stars": "34.8k",
-      "forks": "2k",
-      "tags": ["react", "state-management", "async"],
-      "url": "https://github.com/tanstack/query"
-      
-    },
-    {
         "name": "cobalt",
         "description": "cobalt is a media downloader that doesn't piss you off. it's friendly, efficient, and doesn't have ads, trackers, paywalls or other nonsense.",
         "stars": "21.9k",
@@ -34,6 +7,66 @@
         "tags": ["music", "downloader", "video"],
         "url": "https://github.com/imputnet/cobalt"
         
+      },
+      {
+        "name": "Scrapegraph-ai",
+        "description": "Python scraper based on AI",
+        "stars": "16.6k",
+        "forks": "1.4k",
+        "tags": ["machine-learning", "scraping", "python"],
+        "url": "https://github.com/ScrapeGraphAI/Scrapegraph-ai"
+        
+      },
+      {
+        "name": "activitywatch",
+        "description": "The best free and open-source automated time tracker. Cross-platform, extensible, privacy-focused. ",
+        "stars": "12.9k",
+        "forks": "581",
+        "tags": ["productivity", "timetracking", "analytics"],
+        "url": "https://github.com/ActivityWatch/activitywatch"
+        
+      },
+      {
+        "name": "openui",
+        "description": "OpenUI let's you describe UI using your imagination, then see it rendered live.",
+        "stars": "19.6k",
+        "forks": "1.8K",
+        "tags": ["AI", "generative-ai", "Canvas"],
+        "url": "https://github.com/wandb/openui"
+        
+      },
+      {
+        "name": "polotno-studio",
+        "description": "Free online Design Editor.",
+        "stars": "990",
+        "forks": "204",
+        "tags": ["design", "canvas", "design-editor"],
+        "url": "https://github.com/polotno-project/polotno-studio"
+        
+      },
+      {
+        "name": "aider",
+        "description": "aider is AI pair programming in your terminal ",
+        "stars": "23.8K",
+        "forks": "2.2K",
+        "tags": ["cli", "openai", "command-line"],
+        "url": "https://github.com/Aider-AI/aider"
+      },
+      {
+        "name": "echarts",
+        "description": "Apache ECharts is a powerful, interactive charting and data visualization library for browser",
+        "stars": "61.3K",
+        "forks": "19.6K",
+        "tags": ["visualisation", "svg", "charts"],
+        "url": "https://github.com/apache/echarts"
+      },
+      {
+        "name": "OpenHands",
+        "description": "🙌 OpenHands: Code Less, Make More ",
+        "stars": "39.2K",
+        "forks": "4.4K",
+        "tags": ["agent", "AI", "developer-tools"],
+        "url": "https://github.com/All-Hands-AI/OpenHands"
       }
   ]
   

@@ -9,6 +9,14 @@ const Footer = () => {
         <p>
           © {new Date().getFullYear()} Code Gems. Built with ❤️ and <span className="text-purple-400">Next.js</span>.
         </p>
+        <div className="mt-4">
+          <a href="https://github.com/bebedi15" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white mx-2">
+            GitHub
+          </a>
+          <a href="https://discordapp.com/users/425008768364052480" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white mx-2">
+            Discord
+          </a>
+        </div>
       </div>
     </footer>
   );
