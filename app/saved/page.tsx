@@ -29,7 +29,7 @@ function getRandomGradient() {
 }
 
 export default function SavedPage() {
-  const { savedProjects, removeProject } = useSaved();
+  const {  removeProject } = useSaved();
   const [savedProjectDetails, setSavedProjectDetails] = useState<Project[]>([]);
 
   useEffect(() => {
