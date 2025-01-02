@@ -75,7 +75,6 @@ const Navbar = () => {
         <div className="px-4 py-2 space-y-2">
           <NavLink icon={Home} text="Home" href="/" activeNav={activeNav} setActiveNav={setActiveNav} />
           <NavLink icon={Bookmark} text="Saved" href="/saved" activeNav={activeNav} setActiveNav={setActiveNav} />
-          <NavLink icon={Github} text="Profile" href="/profile" activeNav={activeNav} setActiveNav={setActiveNav} />
         </div>
       </div>
     </nav>
