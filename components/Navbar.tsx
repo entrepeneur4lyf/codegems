@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Terminal, Home, Bookmark, Github, Menu, X } from 'lucide-react';
+import { Terminal, Home, Bookmark, Menu, X } from 'lucide-react';
 
 interface NavLinkProps {
   icon: React.ElementType;
