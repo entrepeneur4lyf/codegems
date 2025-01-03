@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Terminal, Home, Bookmark, Menu, X } from 'lucide-react';
+import { Terminal, Home, Bookmark, Menu, X, Send } from 'lucide-react';
 
 interface NavLinkProps {
   icon: React.ElementType;
@@ -55,6 +55,7 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-4">
             <NavLink icon={Home} text="Home" href="/" activeNav={activeNav} setActiveNav={setActiveNav} />
             <NavLink icon={Bookmark} text="Saved" href="/saved" activeNav={activeNav} setActiveNav={setActiveNav} />
+            <NavLink icon={Send} text="Project Request" href="/request" activeNav={activeNav} setActiveNav={setActiveNav} />
             {/* <NavLink icon={Github} text="Profile" href="/profile" activeNav={activeNav} setActiveNav={setActiveNav} /> */}
           </div>
 
@@ -75,6 +76,7 @@ const Navbar = () => {
         <div className="px-4 py-2 space-y-2">
           <NavLink icon={Home} text="Home" href="/" activeNav={activeNav} setActiveNav={setActiveNav} />
           <NavLink icon={Bookmark} text="Saved" href="/saved" activeNav={activeNav} setActiveNav={setActiveNav} />
+          <NavLink icon={Send} text="Project Request" href="/request" activeNav={activeNav} setActiveNav={setActiveNav} />
         </div>
       </div>
     </nav>

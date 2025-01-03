@@ -17,6 +17,8 @@ interface Project {
   color: string;
 }
 
+
+
 function getRandomGradient() {
   const colors = [
     'from-purple-500 to-pink-500',
@@ -38,7 +40,12 @@ export default function GithubProjectsPage() {
     return [];
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [projectRequest, setProjectRequest] = useState('');
+  const [projectRequest, setProjectRequest] = useState({
+    title: '',
+    githubLink: '',
+    description: '',
+    reason: ''
+  });
   const projectsPerPage = 9;
 
   useEffect(() => {
@@ -73,19 +80,32 @@ export default function GithubProjectsPage() {
   };
 
   const handleProjectRequest = async () => {
-    if (!projectRequest.trim()) return;
+    if (!projectRequest.title.trim() || 
+        !projectRequest.githubLink.trim() || 
+        !projectRequest.description.trim() || 
+        !projectRequest.reason.trim()) {
+      return;
+    }
     
     try {
-      await fetch('/api/project-requests', {
+      const response = await fetch('/api/project-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ request: projectRequest }),
+        body: JSON.stringify(projectRequest),
       });
-      setProjectRequest('');
-      // Add success notification here if desired
+
+      if (!response.ok) {
+        throw new Error('Failed to submit request');
+      }
+
+      setProjectRequest({
+        title: '',
+        githubLink: '',
+        description: '',
+        reason: ''
+      });
     } catch (error) {
       console.error('Failed to submit project request:', error);
-      // Add error notification here if desired
     }
   };
 
@@ -212,18 +232,37 @@ export default function GithubProjectsPage() {
           </div>
 
           {/* Project Request Form */}
-          <div className="max-w-2xl mx-auto">
+         {/* Project Request Form */}
+         <div className="max-w-2xl mx-auto">
             <h3 className="text-xl font-semibold text-white mb-4 text-center">Request a Project</h3>
-            <div className="flex gap-4">
+            <div className="flex flex-col gap-4">
+              <Input
+                placeholder="Project Title"
+                value={projectRequest.title || ''}
+                onChange={(e) => setProjectRequest(prev => ({...prev, title: e.target.value}))}
+                className="bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-400"
+              />
+              <Input
+                placeholder="GitHub Link"
+                value={projectRequest.githubLink || ''}
+                onChange={(e) => setProjectRequest(prev => ({...prev, githubLink: e.target.value}))}
+                className="bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-400"
+              />
               <Textarea
-                placeholder="Describe the type of project you'd like to see..."
-                value={projectRequest}
-                onChange={(e) => setProjectRequest(e.target.value)}
+                placeholder="What is this project about?"
+                value={projectRequest.description || ''}
+                onChange={(e) => setProjectRequest(prev => ({...prev, description: e.target.value}))}
+                className="bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-400"
+              />
+              <Textarea
+                placeholder="Why do you think this is a good project?"
+                value={projectRequest.reason || ''}
+                onChange={(e) => setProjectRequest(prev => ({...prev, reason: e.target.value}))}
                 className="bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-400"
               />
               <Button
                 onClick={handleProjectRequest}
-                className="bg-purple-500 hover:bg-purple-600 text-white"
+                className="bg-purple-500 hover:bg-purple-600 text-white w-full"
               >
                 Submit
               </Button>
