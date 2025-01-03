@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Star, GitFork, Search, Tag } from 'lucide-react';
+import { Star, GitFork, Search, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 
 interface Project {
   name: string;
@@ -24,8 +25,7 @@ function getRandomGradient() {
     'from-green-400 to-blue-500',
     'from-yellow-400 to-orange-500',
   ];
-  const randomIndex = Math.floor(Math.random() * colors.length);
-  return `bg-gradient-to-br ${colors[randomIndex]}`;
+  return `bg-gradient-to-br ${colors[Math.floor(Math.random() * colors.length)]}`;
 }
 
 export default function GithubProjectsPage() {
@@ -37,6 +37,9 @@ export default function GithubProjectsPage() {
     }
     return [];
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [projectRequest, setProjectRequest] = useState('');
+  const projectsPerPage = 9;
 
   useEffect(() => {
     localStorage.setItem('savedProjects', JSON.stringify(savedProjects));
@@ -46,14 +49,11 @@ export default function GithubProjectsPage() {
     const fetchProjects = async () => {
       const response = await fetch('/api/projects');
       const data = await response.json();
-      setProjects(
-        data.map((project: Project) => ({
-          ...project,
-          color: getRandomGradient(),
-        }))
-      );
+      setProjects(data.map((project: Project) => ({
+        ...project,
+        color: getRandomGradient(),
+      })));
     };
-
     fetchProjects();
   }, []);
 
@@ -63,8 +63,30 @@ export default function GithubProjectsPage() {
     project.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  const indexOfLastProject = currentPage * projectsPerPage;
+  const indexOfFirstProject = indexOfLastProject - projectsPerPage;
+  const currentProjects = filteredProjects.slice(indexOfFirstProject, indexOfLastProject);
+  const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
+
   const handleCardClick = (url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleProjectRequest = async () => {
+    if (!projectRequest.trim()) return;
+    
+    try {
+      await fetch('/api/project-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ request: projectRequest }),
+      });
+      setProjectRequest('');
+      // Add success notification here if desired
+    } catch (error) {
+      console.error('Failed to submit project request:', error);
+      // Add error notification here if desired
+    }
   };
 
   const addProject = (projectName: string) => {
@@ -99,8 +121,8 @@ export default function GithubProjectsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProjects.map((project) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+            {currentProjects.map((project) => {
               const isSaved = savedProjects.includes(project.name);
               return (
                 <div
@@ -108,9 +130,7 @@ export default function GithubProjectsPage() {
                   className="group relative cursor-pointer"
                   onClick={() => handleCardClick(project.url)}
                 >
-                  <div
-                    className={`absolute inset-0 ${project.color} rounded-xl blur-md opacity-20 group-hover:opacity-30 transition-all duration-500`}
-                  ></div>
+                  <div className={`absolute inset-0 ${project.color} rounded-xl blur-md opacity-20 group-hover:opacity-30 transition-all duration-500`}></div>
                   <Card className="relative h-full bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-all duration-500 backdrop-blur-sm transform-gpu hover:-translate-y-2 hover:scale-105">
                     <CardContent className="p-6">
                       <div className="flex justify-between items-start mb-4">
@@ -123,13 +143,8 @@ export default function GithubProjectsPage() {
                           className={`text-gray-400 ${isSaved ? 'text-green-500' : 'hover:text-white'}`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (isSaved) {
-                              removeProject(project.name);
-                            } else {
-                              addProject(project.name);
-                            }
+                            isSaved ? removeProject(project.name) : addProject(project.name);
                           }}
-                          
                         >
                           {isSaved ? 'Unsave' : 'Save'}
                         </Button>
@@ -164,6 +179,50 @@ export default function GithubProjectsPage() {
                 </div>
               );
             })}
+          </div>
+
+          {/* Pagination */}
+          <div className="flex justify-center gap-4 mb-16">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="bg-slate-800/50 border-slate-700 text-white hover:bg-slate-700/50"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-gray-400 flex items-center">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="bg-slate-800/50 border-slate-700 text-white hover:bg-slate-700/50"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {/* Project Request Form */}
+          <div className="max-w-2xl mx-auto">
+            <h3 className="text-xl font-semibold text-white mb-4 text-center">Request a Project</h3>
+            <div className="flex gap-4">
+              <Textarea
+                placeholder="Describe the type of project you'd like to see..."
+                value={projectRequest}
+                onChange={(e) => setProjectRequest(e.target.value)}
+                className="bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-400"
+              />
+              <Button
+                onClick={handleProjectRequest}
+                className="bg-purple-500 hover:bg-purple-600 text-white"
+              >
+                Submit
+              </Button>
+            </div>
           </div>
         </div>
       </div>
