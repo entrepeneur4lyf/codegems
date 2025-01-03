@@ -1,6 +1,8 @@
 # Code Gems
 
-Welcome to **Code Gems**! This platform helps you discover and collect remarkable GitHub projects. Whether you're a developer, designer, or tech enthusiast, Code Gems is the ultimate resource for exploring outstanding open-source projects.
+![Code Gems Thumbnail](https://via.placeholder.com/1200x400?text=Code+Gems)
+
+Welcome to **[Code Gems](https://codegems.xyz)**! This platform helps you discover and collect remarkable GitHub projects. Whether you're a developer, designer, or tech enthusiast, Code Gems is the ultimate resource for exploring outstanding open-source projects.
 
 ## Features
 
@@ -26,7 +28,7 @@ If you'd like to contribute to the Code Gems project or run it locally:
    ```
 2. Navigate to the project directory:
    ```bash
-   cd code-gems
+   cd codegems
    ```
 3. Install dependencies:
    ```bash
@@ -34,7 +36,7 @@ If you'd like to contribute to the Code Gems project or run it locally:
    ```
 4. Start the development server:
    ```bash
-   npm start
+   npm run dev
    ```
 
 ## Contributing
@@ -51,4 +53,4 @@ We value your feedback! If you have suggestions, feel free to reach out or open 
 
 ---
 
-Happy exploring with **Code Gems**!
+Happy exploring with **[Code Gems](https://codegems.xyz)**!
