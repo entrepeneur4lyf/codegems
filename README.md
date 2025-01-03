@@ -1,6 +1,6 @@
 # Code Gems
 
-![Code Gems Thumbnail](https://via.placeholder.com/1200x400?text=Code+Gems)
+![Code Gems Thumbnail](/data/image.png)
 
 Welcome to **[Code Gems](https://codegems.xyz)**! This platform helps you discover and collect remarkable GitHub projects. Whether you're a developer, designer, or tech enthusiast, Code Gems is the ultimate resource for exploring outstanding open-source projects.
 
