@@ -10,6 +10,8 @@
 
 Welcome to **[Code Gems](https://codegems.xyz)**! This platform helps you discover and collect remarkable GitHub projects. Whether you're a developer, designer, or tech enthusiast, Code Gems is the ultimate resource for exploring outstanding open-source projects.
 
+The website is currently in development and relies on YOUR input to grow! We’re looking for great project suggestions to feature. Feel free to submit your ideas through a [Request](https://codegems.xyz/request).
+
 ## Features
 
 - **Search**: Easily find projects by name, description, or tags.
