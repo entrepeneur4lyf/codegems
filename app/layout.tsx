@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: 'https://cdn.discordapp.com/attachments/1019356251106324496/1322312765750120529/page-removebg-preview.png?ex=67706b3a&is=676f19ba&hm=70bc100b33421611e3a10e036428833a8d3baeb85d251331a2104b76a169c08d&',
+        url: 'https://media.discordapp.net/attachments/1019356251106324496/1322312765750120529/page-removebg-preview.png?ex=677c48ba&is=677af73a&hm=4e2d042a1355aa5cd578ef86a0c4a81a49f7de1d35b72dc64885df23d8778bc3&=&format=webp&quality=lossless',
         sizes: '32x32',
         type: 'image/png',
       },
