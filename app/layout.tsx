@@ -4,7 +4,6 @@ import { SavedProvider } from './saved/SavedContext'
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Analytics } from "@vercel/analytics/react"
-import WebsiteWidget from 'buymeacoffee';
 
 export const metadata: Metadata = {
   title: 'Code Gems',
@@ -40,10 +39,6 @@ export default function RootLayout({
         <SavedProvider>
           {children}
           </SavedProvider>
-                <WebsiteWidget
-        name="bebedi" 
-        color="FF5F5F"
-        />
           <Footer />
           <Analytics />
       </body>
