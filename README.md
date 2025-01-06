@@ -16,6 +16,7 @@ Welcome to **[Code Gems](https://codegems.xyz)**! This platform helps you discov
 - **Categorized Listings**: Projects are organized into categories such as AI, productivity, design, and more.
 - **Save for Later**: Bookmark projects to revisit your favorites anytime.
 - **User-friendly Design**: A clean, visually appealing UI for seamless navigation.
+- **Requests**: Possibility to submit a GitHub project you think would make an excellent addition to the website.
 
 ## How It Works
 
