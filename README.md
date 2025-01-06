@@ -2,6 +2,12 @@
 
 ![Code Gems Thumbnail](/data/image.png)
 
+<div align="center">
+  <a href="https://www.buymeacoffee.com/bebedi">
+    <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=☕&slug=bebedi&button_colour=FFDD00&font_colour=000000&font_family=Poppins&outline_colour=000000&coffee_colour=ffffff" />
+  </a>
+</div>
+
 Welcome to **[Code Gems](https://codegems.xyz)**! This platform helps you discover and collect remarkable GitHub projects. Whether you're a developer, designer, or tech enthusiast, Code Gems is the ultimate resource for exploring outstanding open-source projects.
 
 ## Features
