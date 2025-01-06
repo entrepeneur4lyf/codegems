@@ -23,6 +23,7 @@ Welcome to **[Code Gems](https://codegems.xyz)**! This platform helps you discov
 2. **Search**: Use the search bar to find projects based on keywords or tags.
 3. **Save**: Bookmark projects you like for future reference.
 4. **Contribute**: Click on any project to visit its GitHub repository and contribute or learn more.
+5. **Requests**: Request a GitHub project you believe would be a great addition to the website.
 
 ## Installation
 
