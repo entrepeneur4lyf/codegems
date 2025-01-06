@@ -42,7 +42,10 @@ export default function RootLayout({
         <SavedProvider>
           {children}
           </SavedProvider>
-        <BuyMeACoffeeWidget/>
+        <BuyMeACoffeeWidget 
+        id="bebedi"  // Your Buy Me a Coffee ID
+        color="#BD5FFF"  // Optional: customize the color
+      />
           <Footer />
           <Analytics />
       </body>
