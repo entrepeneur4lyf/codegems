@@ -1,6 +1,16 @@
-// components/BuyMeACoffee.js
+// components/BuyMeACoffeeWidget.tsx
 'use client';
 import { useEffect } from 'react';
+
+interface BuyMeACoffeeWidgetProps {
+  id?: string;
+  description?: string;
+  message?: string;
+  color?: string;
+  position?: 'Right' | 'Left';
+  xMargin?: number;
+  yMargin?: number;
+}
 
 const BuyMeACoffeeWidget = ({
   id = "bebedi",
@@ -10,7 +20,7 @@ const BuyMeACoffeeWidget = ({
   position = "Right",
   xMargin = 18,
   yMargin = 18
-}) => {
+}: BuyMeACoffeeWidgetProps) => {
   useEffect(() => {
     // Create script element
     const script = document.createElement('script');
@@ -22,8 +32,8 @@ const BuyMeACoffeeWidget = ({
     script.setAttribute('data-message', message);
     script.setAttribute('data-color', color);
     script.setAttribute('data-position', position);
-    script.setAttribute('data-x_margin', xMargin);
-    script.setAttribute('data-y_margin', yMargin);
+    script.setAttribute('data-x_margin', xMargin.toString());
+    script.setAttribute('data-y_margin', yMargin.toString());
     
     // Add script to document
     document.body.appendChild(script);
