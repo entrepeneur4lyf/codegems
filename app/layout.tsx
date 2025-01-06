@@ -41,8 +41,10 @@ export default function RootLayout({
           {children}
           </SavedProvider>
         <BuyMeACoffeeWidget 
-        id="bebedi"  // Your Buy Me a Coffee ID
-        color="#BD5FFF"  // Optional: customize the color
+        id="bebedi"
+        color="#BD5FFF"
+        xMargin={18}
+        yMargin={18}
       />
           <Footer />
           <Analytics />
