@@ -9,15 +9,6 @@
         
       },
       {
-        "name": "Scrapegraph-ai",
-        "description": "Python scraper based on AI",
-        "stars": "16.6k",
-        "forks": "1.4k",
-        "tags": ["machine-learning", "scraping", "python"],
-        "url": "https://github.com/ScrapeGraphAI/Scrapegraph-ai"
-        
-      },
-      {
         "name": "activitywatch",
         "description": "The best free and open-source automated time tracker. Cross-platform, extensible, privacy-focused. ",
         "stars": "12.9k",
@@ -53,20 +44,20 @@
         "url": "https://github.com/Aider-AI/aider"
       },
       {
-        "name": "echarts",
-        "description": "Apache ECharts is a powerful, interactive charting and data visualization library for browser",
-        "stars": "61.3K",
-        "forks": "19.6K",
-        "tags": ["visualisation", "svg", "charts"],
-        "url": "https://github.com/apache/echarts"
-      },
-      {
         "name": "OpenHands",
         "description": "🙌 OpenHands: Code Less, Make More ",
         "stars": "39.2K",
         "forks": "4.4K",
         "tags": ["agent", "AI", "developer-tools"],
         "url": "https://github.com/All-Hands-AI/OpenHands"
+      },
+      {
+        "name": "KeyTik: The All-in-One Automation Tool",
+        "description": "GUI-Based Keyboard Remapper with Profiles, Auto Clicker, Screen Clicker, Multiple Files Opener, AutoHotkey Script Manager and More.",
+        "stars": "188",
+        "forks": "9",
+        "tags": ["keyboard", "autohotkey", "remaper"],
+        "url": "https://github.com/Fajar-RahmadJaya/KeyTik"
       }
   ]
   
