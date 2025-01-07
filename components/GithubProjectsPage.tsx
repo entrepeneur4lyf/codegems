@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Star, GitFork, Search, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 
+
 interface Project {
   name: string;
   description: string;
@@ -31,6 +32,7 @@ function getRandomGradient() {
 }
 
 export default function GithubProjectsPage() {
+  const [SubmitButton, setSubmitButton] = useState("Submit")
   const [searchTerm, setSearchTerm] = useState('');
   const [projects, setProjects] = useState<Project[]>([]);
   const [savedProjects, setSavedProjects] = useState<string[]>(() => {
@@ -84,6 +86,7 @@ export default function GithubProjectsPage() {
         !projectRequest.githubLink.trim() || 
         !projectRequest.description.trim() || 
         !projectRequest.reason.trim()) {
+        setSubmitButton("Please Fill every Text-Area")
       return;
     }
     
@@ -95,8 +98,11 @@ export default function GithubProjectsPage() {
       });
 
       if (!response.ok) {
+        setSubmitButton("Failed to submit request")
         throw new Error('Failed to submit request');
       }
+
+      setSubmitButton("Successfully Sent")
 
       setProjectRequest({
         title: '',
@@ -105,6 +111,7 @@ export default function GithubProjectsPage() {
         reason: ''
       });
     } catch (error) {
+      setSubmitButton("Failed to submit request")
       console.error('Failed to submit project request:', error);
     }
   };
@@ -264,7 +271,7 @@ export default function GithubProjectsPage() {
                 onClick={handleProjectRequest}
                 className="bg-purple-500 hover:bg-purple-600 text-white w-full"
               >
-                Submit
+                {SubmitButton}
               </Button>
             </div>
           </div>

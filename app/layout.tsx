@@ -4,6 +4,7 @@ import { SavedProvider } from './saved/SavedContext'
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Analytics } from "@vercel/analytics/react"
+import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
   title: 'Code Gems',
@@ -40,6 +41,7 @@ export default function RootLayout({
           {children}
           </SavedProvider>
           <Footer />
+          <Toaster />
           <Analytics />
       </body>
     </html>
