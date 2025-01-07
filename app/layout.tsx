@@ -7,7 +7,7 @@ import { Analytics } from "@vercel/analytics/react"
 
 export const metadata: Metadata = {
   title: 'Code Gems',
-  description: 'Discover remarkable GitHub projects',
+  description: 'Welcome to Code Gems - a community-driven platform for discovering and sharing remarkable GitHub projects! The heart of Code Gems is YOU - developers, designers, and tech enthusiasts who know about amazing open-source projects that deserve more visibility.',
   keywords: ['github', 'projects', 'code', 'gems', 'programming'],
   icons: {
     icon: [
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Code Gems',
-    description: 'Discover remarkable GitHub projects',
+    description: 'Welcome to Code Gems - a community-driven platform for discovering and sharing remarkable GitHub projects! The heart of Code Gems is YOU - developers, designers, and tech enthusiasts who know about amazing open-source projects that deserve more visibility.',
     type: 'website',
   },
 }
