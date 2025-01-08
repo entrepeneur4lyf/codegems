@@ -30,12 +30,12 @@ const NavLink = ({ icon: Icon, text, href, activeNav, setActiveNav }: NavLinkPro
 );
 
 const Navbar = () => {
-  const pathname = usePathname(); // Get the current pathname
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeNav, setActiveNav] = useState('/');
 
   useEffect(() => {
-    // Set the activeNav to the current pathname
+  
     setActiveNav(pathname);
   }, [pathname]);
 
@@ -56,7 +56,7 @@ const Navbar = () => {
             <NavLink icon={Home} text="Home" href="/" activeNav={activeNav} setActiveNav={setActiveNav} />
             <NavLink icon={Bookmark} text="Saved" href="/saved" activeNav={activeNav} setActiveNav={setActiveNav} />
             <NavLink icon={Send} text="Project Request" href="/request" activeNav={activeNav} setActiveNav={setActiveNav} />
-            {/* <NavLink icon={Github} text="Profile" href="/profile" activeNav={activeNav} setActiveNav={setActiveNav} /> */}
+       
           </div>
 
           <button

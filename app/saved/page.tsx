@@ -38,11 +38,11 @@ export default function SavedPage() {
         const storedProjects = localStorage.getItem('savedProjects');
         const latestSavedProjects: string[] = storedProjects ? JSON.parse(storedProjects) : [];
 
-        // Fetch all projects from the database
+      
         const response = await fetch('/api/projects');
         const allProjects: Project[] = await response.json();
 
-        // Filter projects to include only saved ones and assign random colors
+       
         const filteredProjects = allProjects
           .filter((project) => latestSavedProjects.includes(project.name))
           .map((project) => ({ ...project, color: getRandomGradient() }));
@@ -54,13 +54,13 @@ export default function SavedPage() {
     };
 
     fetchSavedProjects();
-  }, []); // Fetch saved projects only once when the component mounts
+  }, []); 
 
   const handleRemove = (projectName: string) => {
-    // Remove the project from context
+    
     removeProject(projectName);
 
-    // Update local state to reflect the change instantly
+  
     setSavedProjectDetails((prevDetails) =>
       prevDetails.filter((project) => project.name !== projectName)
     );

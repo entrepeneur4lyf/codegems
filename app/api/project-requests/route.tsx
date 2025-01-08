@@ -42,7 +42,7 @@ export async function POST(request: Request) {
         timestamp: new Date().toISOString(),
         footer: {
           text: "Codegems",
-          icon_url: "https://www.codegems.xyz/icon.png" // Replace with your actual icon URL
+          icon_url: "https://www.codegems.xyz/icon.png"
         }
       }],
     };

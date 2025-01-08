@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import { Analytics } from "@vercel/analytics/react"
 import { Toaster } from "@/components/ui/toaster"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import DiscordPromo from '@/components/DiscordPromo'; 
 
 export const metadata: Metadata = {
   title: 'Code Gems',
@@ -41,6 +42,7 @@ export default function RootLayout({
         <SavedProvider>
           {children}
           </SavedProvider>
+          <DiscordPromo />
           <Footer />
           <Toaster />
           <Analytics />

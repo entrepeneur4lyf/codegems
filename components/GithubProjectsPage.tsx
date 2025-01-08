@@ -19,16 +19,16 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 const DiscordIcon = ({ className = "" }) => (
-  <svg 
-    role="img" 
-    viewBox="0 0 24 24" 
+  <svg
+    role="img"
+    viewBox="0 0 24 24"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
     width="24"
     height="24"
     fill="currentColor"
   >
-    <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/>
+    <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z" />
   </svg>
 );
 
@@ -68,10 +68,10 @@ export default function GithubProjectsPage() {
     return [];
   });
   const [showDiscordDialog, setShowDiscordDialog] = useState(false);
-const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>({
-  status: '',
-  message: ''
-});
+  const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>({
+    status: '',
+    message: ''
+  });
 
   const [currentPage, setCurrentPage] = useState(1);
   const [projectRequest, setProjectRequest] = useState({
@@ -114,17 +114,17 @@ const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>({
   };
 
   const handleProjectRequest = async () => {
-    if (!projectRequest.title.trim() || 
-        !projectRequest.githubLink.trim() || 
-        !projectRequest.description.trim() || 
-        !projectRequest.reason.trim()) {
+    if (!projectRequest.title.trim() ||
+      !projectRequest.githubLink.trim() ||
+      !projectRequest.description.trim() ||
+      !projectRequest.reason.trim()) {
       setSubmissionStatus({
         status: 'error',
         message: 'Please fill in all fields before submitting'
       });
       return;
     }
-    
+
     setShowDiscordDialog(true);
   };
 
@@ -134,20 +134,20 @@ const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>({
         status: 'loading',
         message: 'Submitting your request...'
       });
-      
+
       const response = await fetch('/api/project-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(projectRequest),
       });
-  
+
       if (!response.ok) throw new Error('Failed to submit request');
-  
+
       setSubmissionStatus({
         status: 'success',
         message: 'Thank you for contributing to the community! Your submission will be reviewed shortly.'
       });
-  
+
       setProjectRequest({
         title: '',
         githubLink: '',
@@ -199,7 +199,7 @@ const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>({
               />
             </div>
           </div>
-
+          {/*Project Card*/}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
             {currentProjects.map((project) => {
               const isSaved = savedProjects.includes(project.name);
@@ -290,9 +290,8 @@ const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>({
           </div>
 
           {/* Project Request Section */}
-{/* Project Request Section */}
-<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            {/* Request Form Card */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+
             <Card className="bg-slate-800/50 border-slate-700 h-fit">
               <CardHeader>
                 <CardTitle className="text-white text-xl text-center">Request a Project</CardTitle>
@@ -304,7 +303,7 @@ const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>({
                 <Input
                   placeholder="Project Title"
                   value={projectRequest.title}
-                  onChange={(e) => setProjectRequest(prev => ({...prev, title: e.target.value}))}
+                  onChange={(e) => setProjectRequest(prev => ({ ...prev, title: e.target.value }))}
                   className="bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-400"
                 />
 
@@ -313,7 +312,7 @@ const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>({
                   <Input
                     placeholder="GitHub Link"
                     value={projectRequest.githubLink}
-                    onChange={(e) => setProjectRequest(prev => ({...prev, githubLink: e.target.value}))}
+                    onChange={(e) => setProjectRequest(prev => ({ ...prev, githubLink: e.target.value }))}
                     className="bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-400"
                   />
                 </div>
@@ -321,34 +320,33 @@ const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>({
                 <Textarea
                   placeholder="What is this project about?"
                   value={projectRequest.description}
-                  onChange={(e) => setProjectRequest(prev => ({...prev, description: e.target.value}))}
+                  onChange={(e) => setProjectRequest(prev => ({ ...prev, description: e.target.value }))}
                   className="bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-400"
                 />
 
                 <Textarea
                   placeholder="Why do you think this is a good project?"
                   value={projectRequest.reason}
-                  onChange={(e) => setProjectRequest(prev => ({...prev, reason: e.target.value}))}
+                  onChange={(e) => setProjectRequest(prev => ({ ...prev, reason: e.target.value }))}
                   className="bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-400"
                 />
 
-{submissionStatus.status && (
-  <Alert className={`${
-    submissionStatus.status === 'success' ? 'bg-green-500/20 border-green-500' :
-    submissionStatus.status === 'error' ? 'bg-red-500/20 border-red-500' :
-    'bg-blue-500/20 border-blue-500'
-  } text-white border`}>
-    <AlertCircle className="h-4 w-4" />
-    <AlertTitle>
-      {submissionStatus.status === 'success' ? 'Success!' :
-       submissionStatus.status === 'error' ? 'Error' :
-       'Submitting...'}
-    </AlertTitle>
-    <AlertDescription>
-      {submissionStatus.message}
-    </AlertDescription>
-  </Alert>
-)}
+                {submissionStatus.status && (
+                  <Alert className={`${submissionStatus.status === 'success' ? 'bg-green-500/20 border-green-500' :
+                      submissionStatus.status === 'error' ? 'bg-red-500/20 border-red-500' :
+                        'bg-blue-500/20 border-blue-500'
+                    } text-white border`}>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>
+                      {submissionStatus.status === 'success' ? 'Success!' :
+                        submissionStatus.status === 'error' ? 'Error' :
+                          'Submitting...'}
+                    </AlertTitle>
+                    <AlertDescription>
+                      {submissionStatus.message}
+                    </AlertDescription>
+                  </Alert>
+                )}
                 <Button
                   onClick={handleProjectRequest}
                   className="bg-purple-500 hover:bg-purple-600 text-white w-full flex items-center justify-center gap-2"
@@ -392,7 +390,7 @@ const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>({
                   <Check className="text-green-500 mt-1" />
                   <p>Ensure the project is actively maintained and well-documented</p>
                 </div>
-                
+
                 <div className="pt-4">
                   <h3 className="text-lg font-semibold mb-3">What makes a good submission?</h3>
                   <ul className="space-y-3">
@@ -419,50 +417,51 @@ const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>({
           </div>
         </div>
       </div>
+      {/*Discord Alert*/}
       <AlertDialog open={showDiscordDialog} onOpenChange={setShowDiscordDialog}>
-  <AlertDialogContent className="bg-slate-800 text-white border-slate-700">
-    <AlertDialogHeader>
-      <AlertDialogTitle className="text-2xl flex items-center gap-2">
-        <DiscordIcon className="text-purple-500 w-6 h-6" />
-        Join Our Discord Community!
-      </AlertDialogTitle>
-      <AlertDialogDescription className="text-gray-300 space-y-4">
-        <p>
-          Dont miss updates about your submission! Join our vibrant Discord community to:
-        </p>
-        <ul className="space-y-2">
-          <li className="flex items-start gap-2">
-            <Check className="text-green-500 mt-1 shrink-0" />
-            Get notified when your project is reviewed
-          </li>
-          <li className="flex items-start gap-2">
-            <Check className="text-green-500 mt-1 shrink-0" />
-            Connect with like-minded developers
-          </li>
-          <li className="flex items-start gap-2">
-            <Check className="text-green-500 mt-1 shrink-0" />
-            Discover more amazing projects daily
-          </li>
-          <li className="flex items-start gap-2">
-            <Check className="text-green-500 mt-1 shrink-0" />
-            Share your knowledge and learn from others
-          </li>
-        </ul>
-      </AlertDialogDescription>
-    </AlertDialogHeader>
-    <AlertDialogFooter>
-      <AlertDialogCancel onClick={handleFinalSubmit} className="bg-slate-700 text-white hover:bg-slate-600 border-slate-600">
-        Submit Without Joining
-      </AlertDialogCancel>
-      <AlertDialogAction 
-        onClick={handleDiscordJoin}
-        className="bg-purple-500 hover:bg-purple-600 text-white"
-      >
-        Join Discord and Submit
-      </AlertDialogAction>
-    </AlertDialogFooter>
-  </AlertDialogContent>
-</AlertDialog>
+        <AlertDialogContent className="bg-slate-800 text-white border-slate-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl flex items-center gap-2">
+              <DiscordIcon className="text-purple-500 w-6 h-6" />
+              Join Our Discord Community!
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300 space-y-4">
+              <p>
+                Dont miss updates about your submission! Join our vibrant Discord community to:
+              </p>
+              <ul className="space-y-2">
+                <li className="flex items-start gap-2">
+                  <Check className="text-green-500 mt-1 shrink-0" />
+                  Get notified when your project is reviewed
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="text-green-500 mt-1 shrink-0" />
+                  Connect with like-minded developers
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="text-green-500 mt-1 shrink-0" />
+                  Discover more amazing projects daily
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="text-green-500 mt-1 shrink-0" />
+                  Share your knowledge and learn from others
+                </li>
+              </ul>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleFinalSubmit} className="bg-slate-700 text-white hover:bg-slate-600 border-slate-600">
+              Submit Without Joining
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDiscordJoin}
+              className="bg-purple-500 hover:bg-purple-600 text-white"
+            >
+              Join Discord and Submit
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
