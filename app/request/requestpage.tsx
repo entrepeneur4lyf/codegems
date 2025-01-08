@@ -268,14 +268,14 @@ const RequestPage = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-slate-700 text-white hover:bg-slate-600 border-slate-600">
+            <AlertDialogCancel onClick={handleFinalSubmit} className="bg-slate-700 text-white hover:bg-slate-600 border-slate-600">
               Submit Without Joining
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDiscordJoin}
               className="bg-purple-500 hover:bg-purple-600 text-white"
             >
-              Join Discord
+              Join Discord and Submit
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
