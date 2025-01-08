@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     const discordMessage = {
       embeds: [{
         title: '🆕 New Project Request',
-        color: 0x6366f1,
+        color: 0x8D15CD,
         fields: [
           {
             name: '📝 Project Title',
@@ -40,6 +40,10 @@ export async function POST(request: Request) {
           },
         ],
         timestamp: new Date().toISOString(),
+        footer: {
+          text: "Codegems",
+          icon_url: "https://www.codegems.xyz/icon.png" // Replace with your actual icon URL
+        }
       }],
     };
 
