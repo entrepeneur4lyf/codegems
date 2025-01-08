@@ -13,7 +13,7 @@ const Footer = () => {
           <a href="https://github.com/bebedi15/codegems" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white mx-2">
             GitHub
           </a>
-          <a href="https://discordapp.com/users/425008768364052480" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white mx-2">
+          <a href="https://discord.gg/QtnFGDQj5S" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white mx-2">
             Discord
           </a>
         </div>
