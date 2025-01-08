@@ -245,7 +245,7 @@ const RequestPage = () => {
             </AlertDialogTitle>
             <AlertDialogDescription className="text-gray-300 space-y-4">
               <p>
-                Don't miss updates about your submission! Join our vibrant Discord community to:
+                Dont miss updates about your submission! Join our vibrant Discord community to:
               </p>
               <ul className="space-y-2">
                 <li className="flex items-start gap-2">
