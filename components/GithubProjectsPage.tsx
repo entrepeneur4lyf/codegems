@@ -59,7 +59,6 @@ function getRandomGradient() {
 }
 
 export default function GithubProjectsPage() {
-  const [SubmitButton, setSubmitButton] = useState("Submit");
   const [searchTerm, setSearchTerm] = useState('');
   const [projects, setProjects] = useState<Project[]>([]);
   const [savedProjects, setSavedProjects] = useState<string[]>(() => {
@@ -355,7 +354,7 @@ const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>({
                   className="bg-purple-500 hover:bg-purple-600 text-white w-full flex items-center justify-center gap-2"
                 >
                   <Share2 className="w-4 h-4" />
-                  {SubmitButton}
+                  Submit
                 </Button>
 
                 <div className="flex items-center justify-center gap-4 mt-4">
