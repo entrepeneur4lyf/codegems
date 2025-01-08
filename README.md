@@ -1,4 +1,3 @@
-# Code Gems
 ![Code Gems Thumbnail](/data/image.png)
 <div align="center">
  <a href="https://www.buymeacoffee.com/bebedi">
