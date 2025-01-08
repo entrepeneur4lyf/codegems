@@ -12,7 +12,6 @@ Found an impressive project? Built something cool? We want to feature it! You ca
 - Submit your own projects
 - Suggest great open-source work you've discovered
 - Share projects that helped you in your development journey
-
 Submit your suggestions through our [Request](https://codegems.xyz/request) page.
 
 ## 🔍 Platform Features
@@ -22,34 +21,49 @@ Submit your suggestions through our [Request](https://codegems.xyz/request) page
 - Project bookmarking for later reference
 - Clean, intuitive interface
 
+## 🤝 Join Our Community
+- [Join our Discord server](https://discord.gg/QtnFGDQj5S) to:
+  - Get notified when your submissions are reviewed
+  - Connect with like-minded developers
+  - Discover projects in real-time
+  - Share your knowledge and learn from others
+  - Participate in community discussions and votes
+
 ## 🚀 Getting Started
 1. **Explore**: Browse through community-suggested projects
 2. **Submit**: Share projects you think others should know about
 3. **Search**: Find specific tools using tags or keywords
 4. **Save**: Bookmark projects for future reference
-5. **Contribute**: Visit GitHub repositories to learn more or contribute
-
-## 💻 Local Development
-```bash
-git clone https://github.com/bebedi15/codegems.git
-cd codegems
-npm install
-npm run dev
-```
+5. **Connect**: Join our Discord community
+6. **Contribute**: Visit GitHub repositories to learn more or contribute
 
 ## 🤝 Contributing
 We welcome all types of contributions:
-
 - [Project submissions](https://codegems.xyz/request)
 - [Feature suggestions](https://github.com/bebedi15/codegems/issues/new/choose)
 - [Bug reports and fixes](https://github.com/bebedi15/codegems/issues/new/choose)
 - [UI/UX improvements](https://github.com/bebedi15/codegems/pulls)
+- Join discussions in our [Discord server](https://discord.gg/QtnFGDQj5S)
 
 Open an issue or submit a pull request to get started.
+
+## 💻 Local Development
+Want to run Code Gems locally? As an open source project, you can get started with:
+```
+git clone https://github.com/bebedi15/codegems.git
+```
+```
+cd codegems
+```
+```
+npm install
+```
+```
+npm run dev
+```
 
 ## 📄 License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
-
-Join us in building the ultimate resource for discovering GitHub gems at Code Gems!
+Join us in building the ultimate resource for discovering GitHub gems! Connect with fellow developers on [Discord](https://discord.gg/QtnFGDQj5S) and be part of our growing community! 💎
