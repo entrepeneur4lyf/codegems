@@ -21,6 +21,13 @@ Submit your suggestions through our [Request](https://codegems.xyz/request) page
 - Project bookmarking for later reference
 - Clean, intuitive interface
 
+## Screenshot
+<div align="center">
+<img src="/data/websitescreenshot.png" alt="drawing" width="800"/> 
+</div>
+
+
+
 ## 🤝 Join Our Community
 - [Join our Discord server](https://discord.gg/QtnFGDQj5S) to:
   - Get notified when your submissions are reviewed
