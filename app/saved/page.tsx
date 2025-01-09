@@ -6,6 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Star, GitFork, Tag } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+interface Language {
+  [key: string]: number;
+}
+
 interface Project {
   name: string;
   description: string;
@@ -14,7 +18,70 @@ interface Project {
   tags: string[];
   url: string;
   color: string;
+  languages: Language;
 }
+
+const languageColors: { [key: string]: string } = {
+  Python: '#3572A5',
+  TypeScript: '#2b7489',
+  JavaScript: '#f1e05a',
+  Shell: '#89e051',
+  HTML: '#e34c26',
+  CSS: '#563d7c',
+  Dockerfile: '#384d54',
+  Ruby: '#701516',
+  PowerShell: '#012456',
+  AutoHotkey: '#6594b9',
+  Svelte: '#ff3e00',
+  SCSS: '#c6538c',
+  Scheme: '#1e4aec',
+  "Inno Setup": '#264b99',
+  Batchfile: '#C1F12E',
+  Makefile: '#427819',
+  Jinja: '#a52a22'
+};
+
+const LanguageBar = ({ languages }: { languages: Language }) => {
+  const totalBytes = Object.values(languages).reduce((sum, value) => sum + value, 0);
+  
+  const percentages = Object.entries(languages).map(([name, bytes]) => ({
+    name,
+    percentage: (bytes / totalBytes) * 100
+  })).sort((a, b) => b.percentage - a.percentage);
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-lg font-semibold text-white">Languages</h2>
+      
+      <div className="h-2 w-full flex rounded-full overflow-hidden">
+        {percentages.map(({ name, percentage }) => (
+          <div
+            key={name}
+            style={{
+              width: `${percentage}%`,
+              backgroundColor: languageColors[name] || '#ededed'
+            }}
+          />
+        ))}
+      </div>
+      
+      <div className="flex flex-wrap gap-4">
+        {percentages
+          .filter(({ percentage }) => percentage >= 2)
+          .map(({ name, percentage }) => (
+            <div key={name} className="flex items-center gap-2">
+              <span
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: languageColors[name] || '#ededed' }}
+              />
+              <span className="font-medium text-white">{name}</span>
+              <span className="text-gray-400">{percentage.toFixed(1)}%</span>
+            </div>
+          ))}
+      </div>
+    </div>
+  );
+};
 
 function getRandomGradient() {
   const colors = [
@@ -29,7 +96,7 @@ function getRandomGradient() {
 }
 
 export default function SavedPage() {
-  const {  removeProject } = useSaved();
+  const { removeProject } = useSaved();
   const [savedProjectDetails, setSavedProjectDetails] = useState<Project[]>([]);
 
   useEffect(() => {
@@ -38,11 +105,9 @@ export default function SavedPage() {
         const storedProjects = localStorage.getItem('savedProjects');
         const latestSavedProjects: string[] = storedProjects ? JSON.parse(storedProjects) : [];
 
-      
         const response = await fetch('/api/projects');
         const allProjects: Project[] = await response.json();
 
-       
         const filteredProjects = allProjects
           .filter((project) => latestSavedProjects.includes(project.name))
           .map((project) => ({ ...project, color: getRandomGradient() }));
@@ -57,10 +122,7 @@ export default function SavedPage() {
   }, []); 
 
   const handleRemove = (projectName: string) => {
-    
     removeProject(projectName);
-
-  
     setSavedProjectDetails((prevDetails) =>
       prevDetails.filter((project) => project.name !== projectName)
     );
@@ -69,12 +131,14 @@ export default function SavedPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="pt-24 p-8">
-        <div className="max-w-6xl mx-auto text-center">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 text-transparent bg-clip-text">
             Saved Projects
           </h1>
+          </div>
           {savedProjectDetails.length === 0 ? (
-            <p className="text-gray-400">No projects saved yet.</p>
+            <p className="text-gray-400 text-center">No projects saved yet.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {savedProjectDetails.map((project, index) => (
@@ -119,7 +183,9 @@ export default function SavedPage() {
                         ))}
                       </div>
 
-                      <div className="flex justify-start gap-6 text-sm text-gray-400">
+                      <LanguageBar languages={project.languages} />
+
+                      <div className="flex justify-start gap-6 text-sm text-gray-400 mt-6">
                         <span className="flex items-center">
                           <Star className="h-4 w-4 mr-1.5 text-yellow-500" />
                           {project.stars}

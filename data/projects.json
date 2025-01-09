@@ -5,7 +5,14 @@
         "stars": "21.9k",
         "forks": "1.8k",
         "tags": ["music", "downloader", "video"],
-        "url": "https://github.com/imputnet/cobalt"
+        "url": "https://github.com/imputnet/cobalt",
+        "languages": {
+          "Svelte": 238551,
+          "JavaScript": 200926,
+          "TypeScript": 61739,
+          "HTML": 2275,
+          "Dockerfile": 534
+      }
         
       },
       {
@@ -14,7 +21,12 @@
         "stars": "12.9k",
         "forks": "581",
         "tags": ["productivity", "timetracking", "analytics"],
-        "url": "https://github.com/ActivityWatch/activitywatch"
+        "url": "https://github.com/ActivityWatch/activitywatch",
+        "languages": {
+          "Python": 34676,
+          "Inno Setup": 2731,
+          "Batchfile": 203
+      }
         
       },
       {
@@ -23,7 +35,16 @@
         "stars": "19.6k",
         "forks": "1.8K",
         "tags": ["AI", "generative-ai", "Canvas"],
-        "url": "https://github.com/wandb/openui"
+        "url": "https://github.com/wandb/openui",
+        "languages": {
+          "TypeScript": 292379,
+          "HTML": 191508,
+          "Python": 115922,
+          "CSS": 3799,
+          "JavaScript": 2842,
+          "Shell": 1378,
+          "Dockerfile": 808
+      }
         
       },
       {
@@ -32,7 +53,11 @@
         "stars": "990",
         "forks": "204",
         "tags": ["design", "canvas", "design-editor"],
-        "url": "https://github.com/polotno-project/polotno-studio"
+        "url": "https://github.com/polotno-project/polotno-studio",
+        "languages": {
+          "JavaScript": 85994,
+          "HTML": 4954
+      }
         
       },
       {
@@ -41,7 +66,19 @@
         "stars": "23.8K",
         "forks": "2.2K",
         "tags": ["cli", "openai", "command-line"],
-        "url": "https://github.com/Aider-AI/aider"
+        "url": "https://github.com/Aider-AI/aider",
+        "languages": {
+          "Python": 912511,
+          "Shell": 64794,
+          "JavaScript": 22389,
+          "PowerShell": 19637,
+          "Scheme": 19589,
+          "HTML": 12477,
+          "Dockerfile": 3673,
+          "SCSS": 1957,
+          "Ruby": 196
+      }
+
       },
       {
         "name": "OpenHands",
@@ -49,7 +86,18 @@
         "stars": "39.2K",
         "forks": "4.4K",
         "tags": ["agent", "AI", "developer-tools"],
-        "url": "https://github.com/All-Hands-AI/OpenHands"
+        "url": "https://github.com/All-Hands-AI/OpenHands",
+        "languages": {
+          "Python": 2134618,
+          "TypeScript": 543008,
+          "Shell": 58177,
+          "Makefile": 13744,
+          "Jinja": 13448,
+          "JavaScript": 11288,
+          "Dockerfile": 8755,
+          "CSS": 1976,
+          "HTML": 1849
+      }
       },
       {
         "name": "KeyTik: The All-in-One Automation Tool",
@@ -57,7 +105,12 @@
         "stars": "188",
         "forks": "9",
         "tags": ["keyboard", "autohotkey", "remaper"],
-        "url": "https://github.com/Fajar-RahmadJaya/KeyTik"
+        "url": "https://github.com/Fajar-RahmadJaya/KeyTik",
+        "languages": {
+          "Python": 88531,
+          "AutoHotkey": 22211,
+          "PowerShell": 47
+      }
       }
   ]
   

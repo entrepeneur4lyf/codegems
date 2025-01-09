@@ -18,6 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+
 const DiscordIcon = ({ className = "" }) => (
   <svg
     role="img"
@@ -32,6 +33,10 @@ const DiscordIcon = ({ className = "" }) => (
   </svg>
 );
 
+interface Language {
+  [key: string]: number;
+}
+
 interface Project {
   name: string;
   description: string;
@@ -39,13 +44,76 @@ interface Project {
   forks: string;
   tags: string[];
   url: string;
-  color: string;
+  color?: string;
+  languages: Language;
 }
 
 interface SubmissionStatus {
   status: string;
   message: string;
 }
+
+const languageColors: { [key: string]: string } = {
+  Python: '#3572A5',
+  TypeScript: '#2b7489',
+  JavaScript: '#f1e05a',
+  Shell: '#89e051',
+  HTML: '#e34c26',
+  CSS: '#563d7c',
+  Dockerfile: '#384d54',
+  Ruby: '#701516',
+  PowerShell: '#012456',
+  AutoHotkey: '#6594b9',
+  Svelte: '#ff3e00',
+  SCSS: '#c6538c',
+  Scheme: '#1e4aec',
+  "Inno Setup": '#264b99',
+  Batchfile: '#C1F12E',
+  Makefile: '#427819',
+  Jinja: '#a52a22'
+};
+
+const LanguageBar = ({ languages }: { languages: Language }) => {
+  const totalBytes = Object.values(languages).reduce((sum, value) => sum + value, 0);
+  
+  const percentages = Object.entries(languages).map(([name, bytes]) => ({
+    name,
+    percentage: (bytes / totalBytes) * 100
+  })).sort((a, b) => b.percentage - a.percentage);
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-lg font-semibold text-white">Languages</h2>
+      
+      <div className="h-2 w-full flex rounded-full overflow-hidden">
+        {percentages.map(({ name, percentage }) => (
+          <div
+            key={name}
+            style={{
+              width: `${percentage}%`,
+              backgroundColor: languageColors[name] || '#ededed'
+            }}
+          />
+        ))}
+      </div>
+      
+      <div className="flex flex-wrap gap-4">
+  {percentages
+    .filter(({ percentage }) => percentage >= 2) 
+    .map(({ name, percentage }) => (
+      <div key={name} className="flex items-center gap-2">
+        <span
+          className="w-3 h-3 rounded-full"
+          style={{ backgroundColor: languageColors[name] || '#ededed' }}
+        />
+        <span className="font-medium text-white">{name}</span>
+        <span className="text-gray-400">{percentage.toFixed(1)}%</span>
+      </div>
+    ))}
+</div>
+    </div>
+  );
+};
 
 function getRandomGradient() {
   const colors = [
@@ -101,7 +169,10 @@ export default function GithubProjectsPage() {
   const filteredProjects = projects.filter((project) =>
     project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    project.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+    project.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    Object.keys(project.languages).some((lang) => 
+      lang.toLowerCase().includes(searchTerm.toLowerCase())
+    )
   );
 
   const indexOfLastProject = currentPage * projectsPerPage;
@@ -192,14 +263,14 @@ export default function GithubProjectsPage() {
               <Search className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Search projects by name, description, or tags..."
+                placeholder="Search projects by name, description, tags or language..."
                 className="pl-12 py-6 w-full bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-400 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-500"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
           </div>
-          {/*Project Card*/}
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
             {currentProjects.map((project) => {
               const isSaved = savedProjects.includes(project.name);
@@ -247,7 +318,9 @@ export default function GithubProjectsPage() {
                         ))}
                       </div>
 
-                      <div className="flex justify-start gap-6 text-sm text-gray-400">
+                      <LanguageBar languages={project.languages} />
+
+                      <div className="flex justify-start gap-6 text-sm text-gray-400 mt-6">
                         <span className="flex items-center">
                           <Star className="h-4 w-4 mr-1.5 text-yellow-500" />
                           {project.stars}
@@ -264,7 +337,6 @@ export default function GithubProjectsPage() {
             })}
           </div>
 
-          {/* Pagination */}
           <div className="flex justify-center gap-4 mb-16">
             <Button
               variant="outline"
@@ -289,9 +361,7 @@ export default function GithubProjectsPage() {
             </Button>
           </div>
 
-          {/* Project Request Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-
             <Card className="bg-slate-800/50 border-slate-700 h-fit">
               <CardHeader>
                 <CardTitle className="text-white text-xl text-center">Request a Project</CardTitle>
@@ -366,7 +436,6 @@ export default function GithubProjectsPage() {
               </CardContent>
             </Card>
 
-            {/* Community Guidelines Card */}
             <Card className="bg-slate-800/50 border-slate-700 text-white h-fit lg:mt-0">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -417,7 +486,7 @@ export default function GithubProjectsPage() {
           </div>
         </div>
       </div>
-      {/*Discord Alert*/}
+
       <AlertDialog open={showDiscordDialog} onOpenChange={setShowDiscordDialog}>
         <AlertDialogContent className="bg-slate-800 text-white border-slate-700">
           <AlertDialogHeader>
@@ -463,5 +532,4 @@ export default function GithubProjectsPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  );
-}
+  )};
