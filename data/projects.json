@@ -110,6 +110,16 @@
           "Python": 88531,
           "AutoHotkey": 22211,
           "PowerShell": 47
+      },
+                {
+        "name": "Local File Organizer",
+        "description": "The Local File Organizer is your personal organizing assistant, using cutting-edge AI to bring order to your file chaos - all while respecting your privacy.",
+        "stars": "1.9K",
+        "forks": "143",
+        "tags": ["file-organizer", "ai", "vlm"],
+        "url": "https://github.com/QiuYannnn/Local-File-Organizer",
+        "languages": {
+          "Python": 100
       }
       }
   ]
