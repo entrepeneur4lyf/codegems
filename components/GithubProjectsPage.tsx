@@ -18,6 +18,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const DiscordIcon = ({ className = "" }) => (
   <svg
@@ -85,32 +91,50 @@ const LanguageBar = ({ languages }: { languages: Language }) => {
     <div className="space-y-4">
       <h2 className="text-lg font-semibold text-white">Languages</h2>
       
-      <div className="h-2 w-full flex rounded-full overflow-hidden">
-        {percentages.map(({ name, percentage }) => (
-          <div
-            key={name}
-            style={{
-              width: `${percentage}%`,
-              backgroundColor: languageColors[name] || '#ededed'
-            }}
-          />
-        ))}
-      </div>
+      <TooltipProvider>
+        <div className="h-2 w-full flex rounded-full overflow-hidden">
+          {percentages.map(({ name, percentage }) => (
+            <Tooltip key={name} delayDuration={0}>
+              <TooltipTrigger asChild>
+                <div
+                  style={{
+                    width: `${percentage}%`,
+                    backgroundColor: languageColors[name] || '#ededed'
+                  }}
+                  className="transition-opacity hover:opacity-80"
+                />
+              </TooltipTrigger>
+              <TooltipContent 
+                className="bg-slate-800 border-slate-700 text-white"
+                side="top"
+              >
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: languageColors[name] || '#ededed' }}
+                  />
+                  <span>{name}: {percentage.toFixed(1)}%</span>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          ))}
+        </div>
+      </TooltipProvider>
       
       <div className="flex flex-wrap gap-4">
-  {percentages
-    .filter(({ percentage }) => percentage >= 2) 
-    .map(({ name, percentage }) => (
-      <div key={name} className="flex items-center gap-2">
-        <span
-          className="w-3 h-3 rounded-full"
-          style={{ backgroundColor: languageColors[name] || '#ededed' }}
-        />
-        <span className="font-medium text-white">{name}</span>
-        <span className="text-gray-400">{percentage.toFixed(1)}%</span>
+        {percentages
+          .filter(({ percentage }) => percentage >= 2) 
+          .map(({ name, percentage }) => (
+            <div key={name} className="flex items-center gap-2">
+              <span
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: languageColors[name] || '#ededed' }}
+              />
+              <span className="font-medium text-white">{name}</span>
+              <span className="text-gray-400">{percentage.toFixed(1)}%</span>
+            </div>
+          ))}
       </div>
-    ))}
-</div>
     </div>
   );
 };
@@ -272,70 +296,70 @@ export default function GithubProjectsPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-            {currentProjects.map((project) => {
-              const isSaved = savedProjects.includes(project.name);
-              return (
+  {currentProjects.map((project) => {
+    const isSaved = savedProjects.includes(project.name);
+    return (
+      <div
+        key={project.name}
+        className="group relative cursor-pointer"
+        onClick={() => handleCardClick(project.url)}
+      >
+        <div className={`absolute inset-0 ${project.color} rounded-xl blur-md opacity-20 group-hover:opacity-30 transition-all duration-500`}></div>
+        <Card className="relative h-full bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-all duration-500 backdrop-blur-sm transform-gpu hover:-translate-y-2 hover:scale-105">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-2xl font-bold text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-400 group-hover:via-purple-400 group-hover:to-pink-400 group-hover:bg-clip-text transition-all duration-300">
+                {project.name}
+              </h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`text-gray-400 ${isSaved ? 'text-green-500' : 'hover:text-white'}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isSaved) {
+                    removeProject(project.name);
+                  } else {
+                    addProject(project.name);
+                  }
+                }}
+              >
+                {isSaved ? 'Unsave' : 'Save'}
+              </Button>
+            </div>
+            <p className="text-gray-300 mb-6">{project.description}</p>
+            <div className="flex flex-wrap gap-2 mb-6">
+              {project.tags.map((tag, tagIndex) => (
                 <div
-                  key={project.name}
-                  className="group relative cursor-pointer"
-                  onClick={() => handleCardClick(project.url)}
+                  key={tagIndex}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSearchTerm(tag);
+                  }}
+                  className="bg-slate-700/50 text-gray-300 text-sm px-3 py-1 rounded-full flex items-center transform transition-all duration-300 hover:scale-105 hover:bg-slate-600/50"
                 >
-                  <div className={`absolute inset-0 ${project.color} rounded-xl blur-md opacity-20 group-hover:opacity-30 transition-all duration-500`}></div>
-                  <Card className="relative h-full bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-all duration-500 backdrop-blur-sm transform-gpu hover:-translate-y-2 hover:scale-105">
-                    <CardContent className="p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <h2 className="text-2xl font-bold text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-400 group-hover:via-purple-400 group-hover:to-pink-400 group-hover:bg-clip-text transition-all duration-300">
-                          {project.name}
-                        </h2>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={`text-gray-400 ${isSaved ? 'text-green-500' : 'hover:text-white'}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (isSaved) {
-                              removeProject(project.name);
-                            } else {
-                              addProject(project.name);
-                            }
-                          }}
-                        >
-                          {isSaved ? 'Unsave' : 'Save'}
-                        </Button>
-                      </div>
-
-                      <p className="text-gray-300 mb-6">{project.description}</p>
-
-                      <div className="flex flex-wrap gap-2 mb-6">
-                        {project.tags.map((tag, tagIndex) => (
-                          <div
-                            key={tagIndex}
-                            className="bg-slate-700/50 text-gray-300 text-sm px-3 py-1 rounded-full flex items-center transform transition-all duration-300 hover:scale-105 hover:bg-slate-600/50"
-                          >
-                            <Tag className="h-3 w-3 mr-1.5" />
-                            {tag}
-                          </div>
-                        ))}
-                      </div>
-
-                      <LanguageBar languages={project.languages} />
-
-                      <div className="flex justify-start gap-6 text-sm text-gray-400 mt-6">
-                        <span className="flex items-center">
-                          <Star className="h-4 w-4 mr-1.5 text-yellow-500" />
-                          {project.stars}
-                        </span>
-                        <span className="flex items-center">
-                          <GitFork className="h-4 w-4 mr-1.5" />
-                          {project.forks}
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <Tag className="h-3 w-3 mr-1.5" />
+                  {tag}
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+            <LanguageBar languages={project.languages} />
+            <div className="flex justify-start gap-6 text-sm text-gray-400 mt-6">
+              <span className="flex items-center">
+                <Star className="h-4 w-4 mr-1.5 text-yellow-500" />
+                {project.stars}
+              </span>
+              <span className="flex items-center">
+                <GitFork className="h-4 w-4 mr-1.5" />
+                {project.forks}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  })}
+</div>
 
           <div className="flex justify-center gap-4 mb-16">
             <Button

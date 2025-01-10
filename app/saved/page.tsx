@@ -5,6 +5,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Star, GitFork, Tag } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Language {
   [key: string]: number;
@@ -53,21 +59,39 @@ const LanguageBar = ({ languages }: { languages: Language }) => {
     <div className="space-y-4">
       <h2 className="text-lg font-semibold text-white">Languages</h2>
       
-      <div className="h-2 w-full flex rounded-full overflow-hidden">
-        {percentages.map(({ name, percentage }) => (
-          <div
-            key={name}
-            style={{
-              width: `${percentage}%`,
-              backgroundColor: languageColors[name] || '#ededed'
-            }}
-          />
-        ))}
-      </div>
+      <TooltipProvider>
+        <div className="h-2 w-full flex rounded-full overflow-hidden">
+          {percentages.map(({ name, percentage }) => (
+            <Tooltip key={name} delayDuration={0}>
+              <TooltipTrigger asChild>
+                <div
+                  style={{
+                    width: `${percentage}%`,
+                    backgroundColor: languageColors[name] || '#ededed'
+                  }}
+                  className="transition-opacity hover:opacity-80"
+                />
+              </TooltipTrigger>
+              <TooltipContent 
+                className="bg-slate-800 border-slate-700 text-white"
+                side="top"
+              >
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: languageColors[name] || '#ededed' }}
+                  />
+                  <span>{name}: {percentage.toFixed(1)}%</span>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          ))}
+        </div>
+      </TooltipProvider>
       
       <div className="flex flex-wrap gap-4">
         {percentages
-          .filter(({ percentage }) => percentage >= 2)
+          .filter(({ percentage }) => percentage >= 2) 
           .map(({ name, percentage }) => (
             <div key={name} className="flex items-center gap-2">
               <span
@@ -98,6 +122,7 @@ function getRandomGradient() {
 export default function SavedPage() {
   const { removeProject } = useSaved();
   const [savedProjectDetails, setSavedProjectDetails] = useState<Project[]>([]);
+  const [showWarning, setShowWarning] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchSavedProjects = async () => {
@@ -132,10 +157,24 @@ export default function SavedPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="pt-24 p-8">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 text-transparent bg-clip-text">
-            Saved Projects
-          </h1>
+        <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 text-transparent bg-clip-text">
+              Saved Projects
+            </h1>
+            {showWarning && (
+              <div className="flex items-center justify-center gap-1">
+                <p className="text-yellow-400/80 text-sm flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide-alert-triangle"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                  Projects are saved in your browsers local storage and will be deleted if you clear your browser data
+                </p>
+                <button
+                  onClick={() => setShowWarning(false)}
+                  className="ml-1 text-gray-400 hover:text-gray-300 p-1 rounded-full hover:bg-gray-700/50 transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+              </div>
+            )}
           </div>
           {savedProjectDetails.length === 0 ? (
             <p className="text-gray-400 text-center">No projects saved yet.</p>
