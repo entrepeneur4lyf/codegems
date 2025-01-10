@@ -54,20 +54,15 @@ We welcome all types of contributions:
 
 Open an issue or submit a pull request to get started.
 
-## 💻 Local Development
-Want to run Code Gems locally? As an open source project, you can get started with:
-```
-git clone https://github.com/bebedi15/codegems.git
-```
-```
-cd codegems
-```
-```
-npm install
-```
-```
-npm run dev
-```
+## Star History
+
+<a href="https://star-history.com/#bebedi15/codegems&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=bebedi15/codegems&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=bebedi15/codegems&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=bebedi15/codegems&type=Date" />
+ </picture>
+</a>
 
 ## 📄 License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
