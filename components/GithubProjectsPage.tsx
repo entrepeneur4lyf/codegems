@@ -24,6 +24,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+
+
+
 
 const DiscordIcon = ({ className = "" }) => (
   <svg
@@ -81,7 +92,7 @@ const languageColors: { [key: string]: string } = {
 
 const LanguageBar = ({ languages }: { languages: Language }) => {
   const totalBytes = Object.values(languages).reduce((sum, value) => sum + value, 0);
-  
+
   const percentages = Object.entries(languages).map(([name, bytes]) => ({
     name,
     percentage: (bytes / totalBytes) * 100
@@ -90,7 +101,7 @@ const LanguageBar = ({ languages }: { languages: Language }) => {
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-semibold text-white">Languages</h2>
-      
+
       <TooltipProvider>
         <div className="h-2 w-full flex rounded-full overflow-hidden">
           {percentages.map(({ name, percentage }) => (
@@ -104,12 +115,12 @@ const LanguageBar = ({ languages }: { languages: Language }) => {
                   className="transition-opacity hover:opacity-80"
                 />
               </TooltipTrigger>
-              <TooltipContent 
+              <TooltipContent
                 className="bg-slate-800 border-slate-700 text-white"
                 side="top"
               >
                 <div className="flex items-center gap-2">
-                  <div 
+                  <div
                     className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: languageColors[name] || '#ededed' }}
                   />
@@ -120,10 +131,10 @@ const LanguageBar = ({ languages }: { languages: Language }) => {
           ))}
         </div>
       </TooltipProvider>
-      
+
       <div className="flex flex-wrap gap-4">
         {percentages
-          .filter(({ percentage }) => percentage >= 2) 
+          .filter(({ percentage }) => percentage >= 2)
           .map(({ name, percentage }) => (
             <div key={name} className="flex items-center gap-2">
               <span
@@ -172,6 +183,9 @@ export default function GithubProjectsPage() {
     description: '',
     reason: ''
   });
+  const [sortBy, setSortBy] = useState<SortOption>('none');
+
+
   const projectsPerPage = 9;
 
   useEffect(() => {
@@ -189,14 +203,36 @@ export default function GithubProjectsPage() {
     };
     fetchProjects();
   }, []);
+  type SortOption = 'none' | 'stars' | 'forks';
 
-  const filteredProjects = projects.filter((project) =>
-    project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    project.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    Object.keys(project.languages).some((lang) => 
-      lang.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+  const sortProjects = (projects: Project[], sortBy: SortOption) => {
+    if (sortBy === 'none') return projects;
+    
+    return [...projects].sort((a, b) => {
+
+      const aValue = parseFloat(a[sortBy].toLowerCase().replace(/[,k]/g, '')) * 
+        (a[sortBy].toLowerCase().includes('k') ? 1000 : 1);
+      const bValue = parseFloat(b[sortBy].toLowerCase().replace(/[,k]/g, '')) * 
+        (b[sortBy].toLowerCase().includes('k') ? 1000 : 1);
+      
+
+      if (isNaN(aValue)) return 1;
+      if (isNaN(bValue)) return -1;
+      if (isNaN(aValue) && isNaN(bValue)) return 0;
+      
+      return bValue - aValue;
+    });
+  };
+  const filteredProjects = sortProjects(
+    projects.filter((project) =>
+      project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      project.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      Object.keys(project.languages).some((lang) =>
+        lang.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    ),
+    sortBy
   );
 
   const indexOfLastProject = currentPage * projectsPerPage;
@@ -293,73 +329,85 @@ export default function GithubProjectsPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+            <div className="flex justify-end max-w-6xl mx-auto mb-8">
+              <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
+                <SelectTrigger className="w-[180px] bg-slate-800/50 border-slate-700 text-white">
+                  <SelectValue placeholder="Sort by..." />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-700">
+                  <SelectItem value="none" className="text-white hover:bg-slate-700">No sorting</SelectItem>
+                  <SelectItem value="stars" className="text-white hover:bg-slate-700">Most Stars</SelectItem>
+                  <SelectItem value="forks" className="text-white hover:bg-slate-700">Most Forks</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-  {currentProjects.map((project) => {
-    const isSaved = savedProjects.includes(project.name);
-    return (
-      <div
-        key={project.name}
-        className="group relative cursor-pointer"
-        onClick={() => handleCardClick(project.url)}
-      >
-        <div className={`absolute inset-0 ${project.color} rounded-xl blur-md opacity-20 group-hover:opacity-30 transition-all duration-500`}></div>
-        <Card className="relative h-full bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-all duration-500 backdrop-blur-sm transform-gpu hover:-translate-y-2 hover:scale-105">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start mb-4">
-              <h2 className="text-2xl font-bold text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-400 group-hover:via-purple-400 group-hover:to-pink-400 group-hover:bg-clip-text transition-all duration-300">
-                {project.name}
-              </h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`text-gray-400 ${isSaved ? 'text-green-500' : 'hover:text-white'}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (isSaved) {
-                    removeProject(project.name);
-                  } else {
-                    addProject(project.name);
-                  }
-                }}
-              >
-                {isSaved ? 'Unsave' : 'Save'}
-              </Button>
-            </div>
-            <p className="text-gray-300 mb-6">{project.description}</p>
-            <div className="flex flex-wrap gap-2 mb-6">
-              {project.tags.map((tag, tagIndex) => (
+            {currentProjects.map((project) => {
+              const isSaved = savedProjects.includes(project.name);
+              return (
                 <div
-                  key={tagIndex}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSearchTerm(tag);
-                  }}
-                  className="bg-slate-700/50 text-gray-300 text-sm px-3 py-1 rounded-full flex items-center transform transition-all duration-300 hover:scale-105 hover:bg-slate-600/50"
+                  key={project.name}
+                  className="group relative cursor-pointer"
+                  onClick={() => handleCardClick(project.url)}
                 >
-                  <Tag className="h-3 w-3 mr-1.5" />
-                  {tag}
+                  <div className={`absolute inset-0 ${project.color} rounded-xl blur-md opacity-20 group-hover:opacity-30 transition-all duration-500`}></div>
+                  <Card className="relative h-full bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-all duration-500 backdrop-blur-sm transform-gpu hover:-translate-y-2 hover:scale-105">
+                    <CardContent className="p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <h2 className="text-2xl font-bold text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-400 group-hover:via-purple-400 group-hover:to-pink-400 group-hover:bg-clip-text transition-all duration-300">
+                          {project.name}
+                        </h2>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`text-gray-400 ${isSaved ? 'text-green-500' : 'hover:text-white'}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (isSaved) {
+                              removeProject(project.name);
+                            } else {
+                              addProject(project.name);
+                            }
+                          }}
+                        >
+                          {isSaved ? 'Unsave' : 'Save'}
+                        </Button>
+                      </div>
+                      <p className="text-gray-300 mb-6">{project.description}</p>
+                      <div className="flex flex-wrap gap-2 mb-6">
+                        {project.tags.map((tag, tagIndex) => (
+                          <div
+                            key={tagIndex}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSearchTerm(tag);
+                            }}
+                            className="bg-slate-700/50 text-gray-300 text-sm px-3 py-1 rounded-full flex items-center transform transition-all duration-300 hover:scale-105 hover:bg-slate-600/50"
+                          >
+                            <Tag className="h-3 w-3 mr-1.5" />
+                            {tag}
+                          </div>
+                        ))}
+                      </div>
+                      <LanguageBar languages={project.languages} />
+                      <div className="flex justify-start gap-6 text-sm text-gray-400 mt-6">
+                        <span className="flex items-center">
+                          <Star className="h-4 w-4 mr-1.5 text-yellow-500" />
+                          {project.stars}
+                        </span>
+                        <span className="flex items-center">
+                          <GitFork className="h-4 w-4 mr-1.5" />
+                          {project.forks}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              ))}
-            </div>
-            <LanguageBar languages={project.languages} />
-            <div className="flex justify-start gap-6 text-sm text-gray-400 mt-6">
-              <span className="flex items-center">
-                <Star className="h-4 w-4 mr-1.5 text-yellow-500" />
-                {project.stars}
-              </span>
-              <span className="flex items-center">
-                <GitFork className="h-4 w-4 mr-1.5" />
-                {project.forks}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  })}
-</div>
+              );
+            })}
+          </div>
 
           <div className="flex justify-center gap-4 mb-16">
             <Button
@@ -427,8 +475,8 @@ export default function GithubProjectsPage() {
 
                 {submissionStatus.status && (
                   <Alert className={`${submissionStatus.status === 'success' ? 'bg-green-500/20 border-green-500' :
-                      submissionStatus.status === 'error' ? 'bg-red-500/20 border-red-500' :
-                        'bg-blue-500/20 border-blue-500'
+                    submissionStatus.status === 'error' ? 'bg-red-500/20 border-red-500' :
+                      'bg-blue-500/20 border-blue-500'
                     } text-white border`}>
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>
@@ -556,4 +604,5 @@ export default function GithubProjectsPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )};
+  )
+};
