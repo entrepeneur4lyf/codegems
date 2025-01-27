@@ -1,116 +1,153 @@
 [
-    {
-        "name": "cobalt",
-        "description": "cobalt is a media downloader that doesn't piss you off. it's friendly, efficient, and doesn't have ads, trackers, paywalls or other nonsense.",
-        "stars": "21.9k",
-        "forks": "1.8k",
-        "tags": ["music", "downloader", "video"],
-        "url": "https://github.com/imputnet/cobalt",
-        "languages": {
-          "Svelte": 238551,
-          "JavaScript": 200926,
-          "TypeScript": 61739,
-          "HTML": 2275,
-          "Dockerfile": 534
-      }
-        
-      },
-      {
-        "name": "activitywatch",
-        "description": "The best free and open-source automated time tracker. Cross-platform, extensible, privacy-focused. ",
-        "stars": "12.9k",
-        "forks": "581",
-        "tags": ["productivity", "timetracking", "analytics"],
-        "url": "https://github.com/ActivityWatch/activitywatch",
-        "languages": {
-          "Python": 34676,
-          "Inno Setup": 2731,
-          "Batchfile": 203
-      }
-        
-      },
-      {
-        "name": "openui",
-        "description": "OpenUI let's you describe UI using your imagination, then see it rendered live.",
-        "stars": "19.6k",
-        "forks": "1.8K",
-        "tags": ["AI", "generative-ai", "Canvas"],
-        "url": "https://github.com/wandb/openui",
-        "languages": {
-          "TypeScript": 292379,
-          "HTML": 191508,
-          "Python": 115922,
-          "CSS": 3799,
-          "JavaScript": 2842,
-          "Shell": 1378,
-          "Dockerfile": 808
-      }
-        
-      },
-      {
-        "name": "polotno-studio",
-        "description": "Free online Design Editor.",
-        "stars": "990",
-        "forks": "204",
-        "tags": ["design", "canvas", "design-editor"],
-        "url": "https://github.com/polotno-project/polotno-studio",
-        "languages": {
-          "JavaScript": 85994,
-          "HTML": 4954
-      }
-        
-      },
-      {
-        "name": "aider",
-        "description": "aider is AI pair programming in your terminal ",
-        "stars": "23.8K",
-        "forks": "2.2K",
-        "tags": ["cli", "openai", "command-line"],
-        "url": "https://github.com/Aider-AI/aider",
-        "languages": {
-          "Python": 912511,
-          "Shell": 64794,
-          "JavaScript": 22389,
-          "PowerShell": 19637,
-          "Scheme": 19589,
-          "HTML": 12477,
-          "Dockerfile": 3673,
-          "SCSS": 1957,
-          "Ruby": 196
-      }
-
-      },
-      {
-        "name": "OpenHands",
-        "description": "🙌 OpenHands: Code Less, Make More ",
-        "stars": "39.2K",
-        "forks": "4.4K",
-        "tags": ["agent", "AI", "developer-tools"],
-        "url": "https://github.com/All-Hands-AI/OpenHands",
-        "languages": {
-          "Python": 2134618,
-          "TypeScript": 543008,
-          "Shell": 58177,
-          "Makefile": 13744,
-          "Jinja": 13448,
-          "JavaScript": 11288,
-          "Dockerfile": 8755,
-          "CSS": 1976,
-          "HTML": 1849
-      }
-      },
-      {
-        "name": "KeyTik: The All-in-One Automation Tool",
-        "description": "GUI-Based Keyboard Remapper with Profiles, Auto Clicker, Screen Clicker, Multiple Files Opener, AutoHotkey Script Manager and More.",
-        "stars": "188",
-        "forks": "9",
-        "tags": ["keyboard", "autohotkey", "remaper"],
-        "url": "https://github.com/Fajar-RahmadJaya/KeyTik",
-        "languages": {
-          "Python": 88531,
-          "AutoHotkey": 22211,
-          "PowerShell": 47
-      }
-      }
-  ]
-  
+  {
+    "name": "cobalt",
+    "description": "cobalt is a media downloader that doesn't piss you off. it's friendly, efficient, and doesn't have ads, trackers, paywalls or other nonsense.",
+    "stars": "27.1k",
+    "forks": "2.2k",
+    "tags": [
+      "music",
+      "downloader",
+      "video"
+    ],
+    "url": "https://github.com/imputnet/cobalt",
+    "languages": {
+      "Svelte": 238604,
+      "JavaScript": 209138,
+      "TypeScript": 62267,
+      "HTML": 2275,
+      "Dockerfile": 534
+    }
+  },
+  {
+    "name": "activitywatch",
+    "description": "The best free and open-source automated time tracker. Cross-platform, extensible, privacy-focused. ",
+    "stars": "13.2k",
+    "forks": "594",
+    "tags": [
+      "productivity",
+      "timetracking",
+      "analytics"
+    ],
+    "url": "https://github.com/ActivityWatch/activitywatch",
+    "languages": {
+      "Python": 34676,
+      "Inno Setup": 2731,
+      "Batchfile": 203
+    }
+  },
+  {
+    "name": "openui",
+    "description": "OpenUI let's you describe UI using your imagination, then see it rendered live.",
+    "stars": "19.8k",
+    "forks": "1.8k",
+    "tags": [
+      "AI",
+      "generative-ai",
+      "Canvas"
+    ],
+    "url": "https://github.com/wandb/openui",
+    "languages": {
+      "TypeScript": 292379,
+      "HTML": 191508,
+      "Python": 115922,
+      "CSS": 3799,
+      "JavaScript": 2842,
+      "Shell": 1378,
+      "Dockerfile": 808
+    }
+  },
+  {
+    "name": "polotno-studio",
+    "description": "Free online Design Editor.",
+    "stars": "1k",
+    "forks": "206",
+    "tags": [
+      "design",
+      "canvas",
+      "design-editor"
+    ],
+    "url": "https://github.com/polotno-project/polotno-studio",
+    "languages": {
+      "JavaScript": 85994,
+      "HTML": 4954
+    }
+  },
+  {
+    "name": "aider",
+    "description": "aider is AI pair programming in your terminal ",
+    "stars": "25.6k",
+    "forks": "2.4k",
+    "tags": [
+      "cli",
+      "openai",
+      "command-line"
+    ],
+    "url": "https://github.com/Aider-AI/aider",
+    "languages": {
+      "Python": 930533,
+      "Shell": 65090,
+      "JavaScript": 22444,
+      "Scheme": 20221,
+      "PowerShell": 19637,
+      "HTML": 12477,
+      "Dockerfile": 4011,
+      "SCSS": 1957,
+      "Ruby": 196
+    }
+  },
+  {
+    "name": "OpenHands",
+    "description": "\ud83d\ude4c OpenHands: Code Less, Make More ",
+    "stars": "44.6k",
+    "forks": "4.9k",
+    "tags": [
+      "agent",
+      "AI",
+      "developer-tools"
+    ],
+    "url": "https://github.com/All-Hands-AI/OpenHands",
+    "languages": {
+      "Python": 2266605,
+      "TypeScript": 573807,
+      "Shell": 59478,
+      "Makefile": 13744,
+      "Jinja": 13473,
+      "JavaScript": 11288,
+      "Dockerfile": 8755,
+      "CSS": 1976,
+      "HTML": 1849
+    }
+  },
+  {
+    "name": "KeyTik: The All-in-One Automation Tool",
+    "description": "GUI-Based Keyboard Remapper with Profiles, Auto Clicker, Screen Clicker, Multiple Files Opener, AutoHotkey Script Manager and More.",
+    "stars": "215",
+    "forks": "12",
+    "tags": [
+      "keyboard",
+      "autohotkey",
+      "remaper"
+    ],
+    "url": "https://github.com/Fajar-RahmadJaya/KeyTik",
+    "languages": {
+      "Python": 97449,
+      "AutoHotkey": 22211,
+      "PowerShell": 47
+    }
+  },
+  {
+    "name": "Local File Organizer",
+    "description": "The Local File Organizer is your personal organizing assistant, using cutting-edge AI to bring order to your file chaos - all while respecting your privacy.",
+    "stars": "1.9k",
+    "forks": "145",
+    "tags": [
+      "file-organizer",
+      "ai",
+      "vlm"
+    ],
+    "url": "https://github.com/QiuYannnn/Local-File-Organizer",
+    "languages": {
+      "Python": 41751
+    }
+  }
+]
