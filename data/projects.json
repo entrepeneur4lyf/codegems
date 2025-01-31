@@ -2,7 +2,7 @@
   {
     "name": "cobalt",
     "description": "cobalt is a media downloader that doesn't piss you off. it's friendly, efficient, and doesn't have ads, trackers, paywalls or other nonsense.",
-    "stars": "27.1k",
+    "stars": "27.2k",
     "forks": "2.2k",
     "tags": [
       "music",
@@ -12,7 +12,7 @@
     "url": "https://github.com/imputnet/cobalt",
     "languages": {
       "Svelte": 238604,
-      "JavaScript": 209138,
+      "JavaScript": 209170,
       "TypeScript": 62267,
       "HTML": 2275,
       "Dockerfile": 534
@@ -21,7 +21,7 @@
   {
     "name": "activitywatch",
     "description": "The best free and open-source automated time tracker. Cross-platform, extensible, privacy-focused. ",
-    "stars": "13.2k",
+    "stars": "13.3k",
     "forks": "594",
     "tags": [
       "productivity",
@@ -68,14 +68,14 @@
     ],
     "url": "https://github.com/polotno-project/polotno-studio",
     "languages": {
-      "JavaScript": 85994,
+      "JavaScript": 87471,
       "HTML": 4954
     }
   },
   {
     "name": "aider",
     "description": "aider is AI pair programming in your terminal ",
-    "stars": "25.6k",
+    "stars": "26k",
     "forks": "2.4k",
     "tags": [
       "cli",
@@ -84,8 +84,8 @@
     ],
     "url": "https://github.com/Aider-AI/aider",
     "languages": {
-      "Python": 930533,
-      "Shell": 65090,
+      "Python": 914785,
+      "Shell": 65117,
       "JavaScript": 22444,
       "Scheme": 20221,
       "PowerShell": 19637,
@@ -98,8 +98,8 @@
   {
     "name": "OpenHands",
     "description": "\ud83d\ude4c OpenHands: Code Less, Make More ",
-    "stars": "44.6k",
-    "forks": "4.9k",
+    "stars": "45k",
+    "forks": "5k",
     "tags": [
       "agent",
       "AI",
@@ -107,12 +107,12 @@
     ],
     "url": "https://github.com/All-Hands-AI/OpenHands",
     "languages": {
-      "Python": 2266605,
-      "TypeScript": 573807,
-      "Shell": 59478,
+      "Python": 2291672,
+      "TypeScript": 574037,
+      "Shell": 59477,
       "Makefile": 13744,
-      "Jinja": 13473,
-      "JavaScript": 11288,
+      "Jinja": 13634,
+      "JavaScript": 11657,
       "Dockerfile": 8755,
       "CSS": 1976,
       "HTML": 1849
@@ -121,7 +121,7 @@
   {
     "name": "KeyTik: The All-in-One Automation Tool",
     "description": "GUI-Based Keyboard Remapper with Profiles, Auto Clicker, Screen Clicker, Multiple Files Opener, AutoHotkey Script Manager and More.",
-    "stars": "215",
+    "stars": "220",
     "forks": "12",
     "tags": [
       "keyboard",
@@ -138,8 +138,8 @@
   {
     "name": "Local File Organizer",
     "description": "The Local File Organizer is your personal organizing assistant, using cutting-edge AI to bring order to your file chaos - all while respecting your privacy.",
-    "stars": "1.9k",
-    "forks": "145",
+    "stars": "2k",
+    "forks": "147",
     "tags": [
       "file-organizer",
       "ai",
@@ -151,23 +151,20 @@
     }
   },
   {
-    "name": "Maxun",
-    "description": "Open-Source No-Code Web Data Extraction Platform. Turn Websites To APIs & Spreadsheets With No-Code Robots In Minutes.",
-    "stars": "8.8K",
-    "forks": "680",
+    "name": "Sniffet",
+    "description": "Comfortably monitor your Internet traffic \ud83d\udd75\ufe0f\u200d\u2642\ufe0f ",
+    "stars": "19.5k",
+    "forks": "590",
     "tags": [
-      "api",
-      "scraper",
-      "no-code"
+      "Analytics",
+      "Networking",
+      "Monitoring"
     ],
-    "url": "https://github.com/getmaxun/maxun",
+    "url": "https://github.com/GyulyVGC/sniffnet",
     "languages": {
-      "TypeScript": 807495,
-      "JavaScript": 33139,
-      "CSS": 3130,
-      "Dockerfile": 1696,
-      "HTML": 707,
-      "Shell": 317
+      "Rust": 839682,
+      "Rich Text Format": 10415,
+      "Shell": 1417
     }
   }
 ]
