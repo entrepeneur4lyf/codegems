@@ -151,6 +151,26 @@
     }
   },
   {
+    "name": "Maxun",
+    "description": "Open-Source No-Code Web Data Extraction Platform. Turn Websites To APIs & Spreadsheets With No-Code Robots In Minutes.",
+    "stars": "8.8K",
+    "forks": "680",
+    "tags": [
+      "api",
+      "scraper",
+      "no-code"
+    ],
+    "url": "https://github.com/getmaxun/maxun",
+    "languages": {
+      "TypeScript": 807495,
+      "JavaScript": 33139,
+      "CSS": 3130,
+      "Dockerfile": 1696,
+      "HTML": 707,
+      "Shell": 317
+    }
+  },
+  {
     "name": "Sniffet",
     "description": "Comfortably monitor your Internet traffic \ud83d\udd75\ufe0f\u200d\u2642\ufe0f ",
     "stars": "19.5k",
