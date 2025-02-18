@@ -47,9 +47,9 @@ Submit your suggestions through our [Request](https://codegems.xyz/request) page
 ## 🤝 Contributing
 We welcome all types of contributions:
 - [Project submissions](https://codegems.xyz/request)
-- [Feature suggestions](https://github.com/bebedi15/codegems/issues/new/choose)
-- [Bug reports and fixes](https://github.com/bebedi15/codegems/issues/new/choose)
-- [UI/UX improvements](https://github.com/bebedi15/codegems/pulls)
+- [Feature suggestions](https://github.com/sparths/codegems/issues/new/choose)
+- [Bug reports and fixes](https://github.com/sparths/codegems/issues/new/choose)
+- [UI/UX improvements](https://github.com/sparths/codegems/pulls)
 - Join discussions in our [Discord server](https://discord.gg/QtnFGDQj5S)
 
 Open an issue or submit a pull request to get started.
