@@ -1,9 +1,30 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Terminal, Home, Bookmark, Menu, X, Send } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  Terminal,
+  Home,
+  Bookmark,
+  Menu,
+  X,
+  Send,
+  User,
+  Trophy,
+  Award,
+  LogOut,
+} from "lucide-react";
+import { useAuth } from "@/app/context/AuthContext";
+import AuthenticationDialog from "@/components/AuthenticationDialog";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NavLinkProps {
   icon: React.ElementType;
@@ -13,17 +34,27 @@ interface NavLinkProps {
   setActiveNav: (id: string) => void;
 }
 
-const NavLink = ({ icon: Icon, text, href, activeNav, setActiveNav }: NavLinkProps) => (
+const NavLink = ({
+  icon: Icon,
+  text,
+  href,
+  activeNav,
+  setActiveNav,
+}: NavLinkProps) => (
   <Link href={href}>
     <button
       onClick={() => setActiveNav(href)}
       className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${
         activeNav === href
-          ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white'
-          : 'text-gray-400 hover:text-white'
+          ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white"
+          : "text-gray-400 hover:text-white"
       }`}
     >
-      <Icon className={`h-5 w-5 transition-transform duration-300 ${activeNav === href ? 'scale-110' : ''}`} />
+      <Icon
+        className={`h-5 w-5 transition-transform duration-300 ${
+          activeNav === href ? "scale-110" : ""
+        }`}
+      />
       <span className="hidden md:block">{text}</span>
     </button>
   </Link>
@@ -32,10 +63,12 @@ const NavLink = ({ icon: Icon, text, href, activeNav, setActiveNav }: NavLinkPro
 const Navbar = () => {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeNav, setActiveNav] = useState('/');
+  const [activeNav, setActiveNav] = useState("/");
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+
+  const { user, isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
-  
     setActiveNav(pathname);
   }, [pathname]);
 
@@ -53,32 +86,183 @@ const Navbar = () => {
           </Link>
 
           <div className="hidden md:flex items-center gap-4">
-            <NavLink icon={Home} text="Home" href="/" activeNav={activeNav} setActiveNav={setActiveNav} />
-            <NavLink icon={Bookmark} text="Saved" href="/saved" activeNav={activeNav} setActiveNav={setActiveNav} />
-            <NavLink icon={Send} text="Project Request" href="/request" activeNav={activeNav} setActiveNav={setActiveNav} />
-       
+            <NavLink
+              icon={Home}
+              text="Home"
+              href="/"
+              activeNav={activeNav}
+              setActiveNav={setActiveNav}
+            />
+            <NavLink
+              icon={Bookmark}
+              text="Gespeichert"
+              href="/saved"
+              activeNav={activeNav}
+              setActiveNav={setActiveNav}
+            />
+            <NavLink
+              icon={Send}
+              text="Projekt vorschlagen"
+              href="/request"
+              activeNav={activeNav}
+              setActiveNav={setActiveNav}
+            />
+            <NavLink
+              icon={Trophy}
+              text="Bestenliste"
+              href="/leaderboard"
+              activeNav={activeNav}
+              setActiveNav={setActiveNav}
+            />
           </div>
 
-          <button
-            className="md:hidden p-2 text-gray-400 hover:text-white"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+          <div className="flex items-center gap-2">
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="rounded-full p-2 bg-slate-800/80 border border-slate-700"
+                  >
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={user?.avatarUrl}
+                        alt={user?.displayName}
+                        className="w-6 h-6 rounded-full"
+                      />
+                      <span className="text-white text-sm hidden md:block pr-1">
+                        {user?.displayName}
+                      </span>
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 bg-slate-800 border-slate-700 text-white">
+                  <div className="flex items-center justify-between p-2">
+                    <div className="flex flex-col">
+                      <span className="font-medium">{user?.displayName}</span>
+                      <span className="text-xs text-gray-400">
+                        @{user?.username}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Award className="h-4 w-4 text-yellow-500" />
+                      <span className="text-sm">{user?.level}</span>
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator className="bg-slate-700" />
+                  <Link href="/profile">
+                    <DropdownMenuItem className="cursor-pointer hover:bg-slate-700">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profil</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  <Link href="/badges">
+                    <DropdownMenuItem className="cursor-pointer hover:bg-slate-700">
+                      <Award className="mr-2 h-4 w-4" />
+                      <span>Abzeichen</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuSeparator className="bg-slate-700" />
+                  <DropdownMenuItem
+                    onClick={logout}
+                    className="cursor-pointer hover:bg-slate-700 text-red-400 hover:text-red-300"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Abmelden</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                onClick={() => setShowAuthDialog(true)}
+                className="bg-purple-500 hover:bg-purple-600 text-white"
+              >
+                Anmelden
+              </Button>
+            )}
+
+            <button
+              className="md:hidden p-2 text-gray-400 hover:text-white"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
       <div
         className={`md:hidden transition-all duration-300 ${
-          isMenuOpen ? 'max-h-48 opacity-100 border-b border-slate-700' : 'max-h-0 opacity-0 overflow-hidden'
+          isMenuOpen
+            ? "max-h-screen opacity-100 border-b border-slate-700"
+            : "max-h-0 opacity-0 overflow-hidden"
         }`}
       >
         <div className="px-4 py-2 space-y-2">
-          <NavLink icon={Home} text="Home" href="/" activeNav={activeNav} setActiveNav={setActiveNav} />
-          <NavLink icon={Bookmark} text="Saved" href="/saved" activeNav={activeNav} setActiveNav={setActiveNav} />
-          <NavLink icon={Send} text="Project Request" href="/request" activeNav={activeNav} setActiveNav={setActiveNav} />
+          <NavLink
+            icon={Home}
+            text="Home"
+            href="/"
+            activeNav={activeNav}
+            setActiveNav={setActiveNav}
+          />
+          <NavLink
+            icon={Bookmark}
+            text="Gespeichert"
+            href="/saved"
+            activeNav={activeNav}
+            setActiveNav={setActiveNav}
+          />
+          <NavLink
+            icon={Send}
+            text="Projekt vorschlagen"
+            href="/request"
+            activeNav={activeNav}
+            setActiveNav={setActiveNav}
+          />
+          <NavLink
+            icon={Trophy}
+            text="Bestenliste"
+            href="/leaderboard"
+            activeNav={activeNav}
+            setActiveNav={setActiveNav}
+          />
+          {isAuthenticated && (
+            <>
+              <NavLink
+                icon={User}
+                text="Profil"
+                href="/profile"
+                activeNav={activeNav}
+                setActiveNav={setActiveNav}
+              />
+              <NavLink
+                icon={Award}
+                text="Abzeichen"
+                href="/badges"
+                activeNav={activeNav}
+                setActiveNav={setActiveNav}
+              />
+              <div
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-red-400 hover:text-red-300 cursor-pointer"
+                onClick={logout}
+              >
+                <LogOut className="h-5 w-5" />
+                <span>Abmelden</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
+
+      <AuthenticationDialog
+        isOpen={showAuthDialog}
+        onOpenChange={setShowAuthDialog}
+      />
     </nav>
   );
 };

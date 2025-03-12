@@ -1,18 +1,27 @@
-import "./globals.css"
-import type { Metadata } from "next"
-import { SavedProvider } from "./saved/SavedContext"
-import Navbar from "@/components/Navbar"
-import Footer from "@/components/Footer"
-import { Analytics } from "@vercel/analytics/react"
-import { Toaster } from "@/components/ui/toaster"
-import { SpeedInsights } from "@vercel/speed-insights/next"
-import DiscordPromo from "@/components/DiscordPromo"
+import "./globals.css";
+import type { Metadata } from "next";
+import { SavedProvider } from "./saved/SavedContext";
+import { AuthProvider } from "./context/AuthContext";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { Analytics } from "@vercel/analytics/react";
+import { Toaster } from "@/components/ui/toaster";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import DiscordPromo from "@/components/DiscordPromo";
 
 export const metadata: Metadata = {
   title: "Code Gems - Discover Remarkable GitHub Projects",
   description:
     "Welcome to Code Gems - a community-driven platform for discovering and sharing remarkable GitHub projects! Explore amazing open-source projects curated by developers, designers, and tech enthusiasts.",
-  keywords: ["github", "projects", "code", "gems", "programming", "open-source", "developer tools"],
+  keywords: [
+    "github",
+    "projects",
+    "code",
+    "gems",
+    "programming",
+    "open-source",
+    "developer tools",
+  ],
   authors: [{ name: "Bebedi" }],
   creator: "Code Gems",
   publisher: "Bebedi",
@@ -26,7 +35,9 @@ export const metadata: Metadata = {
       { url: "/favicon.ico", sizes: "any" },
       { url: "/icon.png", type: "image/png", sizes: "32x32" },
     ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
   manifest: "/site.webmanifest",
   openGraph: {
@@ -56,12 +67,12 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-}
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en">
@@ -69,15 +80,16 @@ export default function RootLayout({
         <link rel="canonical" href="https://codegems.xyz" />
       </head>
       <body>
-        <Navbar />
-        <SavedProvider>{children}</SavedProvider>
-        <DiscordPromo />
-        <Footer />
-        <Toaster />
-        <Analytics />
-        <SpeedInsights />
+        <AuthProvider>
+          <Navbar />
+          <SavedProvider>{children}</SavedProvider>
+          <DiscordPromo />
+          <Footer />
+          <Toaster />
+          <Analytics />
+          <SpeedInsights />
+        </AuthProvider>
       </body>
     </html>
-  )
+  );
 }
-
