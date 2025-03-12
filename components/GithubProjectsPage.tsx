@@ -1,13 +1,31 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Star, GitFork, Search, Tag, ChevronLeft, ChevronRight, Heart, Github, Share2, Check, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import {
+  Star,
+  GitFork,
+  Search,
+  Tag,
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  Github,
+  Share2,
+  Check,
+  AlertCircle,
+} from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,11 +48,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-
-
-
-
+} from "@/components/ui/select";
+import { useRouter } from "next/navigation";
 
 const DiscordIcon = ({ className = "" }) => (
   <svg
@@ -71,80 +86,83 @@ interface SubmissionStatus {
 }
 
 const languageColors: { [key: string]: string } = {
-  Ada: '#02f88c',
-  Assembly: '#6E4C13',
-  AutoHotkey: '#6594b9',
-  Batchfile: '#C1F12E',
-  C: '#555555',
-  'C#': '#178600',
-  'C++': '#f34b7d',
-  Clojure: '#db5855',
-  COBOL: '#4d41b1',
-  CoffeeScript: '#244776',
-  CSS: '#563d7c',
-  D: '#ba595e',
-  Dart: '#00B4AB',
-  Dockerfile: '#384d54',
-  Elixir: '#6e4a7e',
-  Elm: '#60B5CC',
-  Erlang: '#B83998',
-  'F#': '#b845fc',
-  Fortran: '#4d41b1',
-  Go: '#00ADD8',
-  Groovy: '#e69f56',
-  Haskell: '#5e5086',
-  HTML: '#e34c26',
-  "Inno Setup": '#264b99',
-  Java: '#b07219',
-  JavaScript: '#f1e05a',
-  Jinja: '#a52a22',
-  Julia: '#a270ba',
-  Kotlin: '#F18E33',
-  LISP: '#3fb68b',
-  Lua: '#000080',
-  Makefile: '#427819',
-  MATLAB: '#e16737',
-  Nim: '#37775b',
-  ObjectiveC: '#438eff',
-  OCaml: '#3be133',
-  Pascal: '#E3F171',
-  Perl: '#0298c3',
-  PHP: '#4F5D95',
-  PowerShell: '#012456',
-  Prolog: '#74283c',
-  Python: '#3572A5',
-  R: '#198CE7',
-  Racket: '#3c5caa',
-  Ruby: '#701516',
-  Rust: '#dea584',
-  Scala: '#c22d40',
-  Scheme: '#1e4aec',
-  SCSS: '#c6538c',
-  Shell: '#89e051',
-  Smalltalk: '#596706',
-  SQL: '#e38c00',
-  Svelte: '#ff3e00',
-  Swift: '#ffac45',
-  Tcl: '#e4cc98',
-  TypeScript: '#2b7489',
-  V: '#5d87bd',
-  Vala: '#fbe5cd',
-  Verilog: '#b2b7f8',
-  VHDL: '#adb2cb',
-  Vue: '#41b883',
-  WebAssembly: '#04133b',
-  Zig: '#ec915c'
+  Ada: "#02f88c",
+  Assembly: "#6E4C13",
+  AutoHotkey: "#6594b9",
+  Batchfile: "#C1F12E",
+  C: "#555555",
+  "C#": "#178600",
+  "C++": "#f34b7d",
+  Clojure: "#db5855",
+  COBOL: "#4d41b1",
+  CoffeeScript: "#244776",
+  CSS: "#563d7c",
+  D: "#ba595e",
+  Dart: "#00B4AB",
+  Dockerfile: "#384d54",
+  Elixir: "#6e4a7e",
+  Elm: "#60B5CC",
+  Erlang: "#B83998",
+  "F#": "#b845fc",
+  Fortran: "#4d41b1",
+  Go: "#00ADD8",
+  Groovy: "#e69f56",
+  Haskell: "#5e5086",
+  HTML: "#e34c26",
+  "Inno Setup": "#264b99",
+  Java: "#b07219",
+  JavaScript: "#f1e05a",
+  Jinja: "#a52a22",
+  Julia: "#a270ba",
+  Kotlin: "#F18E33",
+  LISP: "#3fb68b",
+  Lua: "#000080",
+  Makefile: "#427819",
+  MATLAB: "#e16737",
+  Nim: "#37775b",
+  ObjectiveC: "#438eff",
+  OCaml: "#3be133",
+  Pascal: "#E3F171",
+  Perl: "#0298c3",
+  PHP: "#4F5D95",
+  PowerShell: "#012456",
+  Prolog: "#74283c",
+  Python: "#3572A5",
+  R: "#198CE7",
+  Racket: "#3c5caa",
+  Ruby: "#701516",
+  Rust: "#dea584",
+  Scala: "#c22d40",
+  Scheme: "#1e4aec",
+  SCSS: "#c6538c",
+  Shell: "#89e051",
+  Smalltalk: "#596706",
+  SQL: "#e38c00",
+  Svelte: "#ff3e00",
+  Swift: "#ffac45",
+  Tcl: "#e4cc98",
+  TypeScript: "#2b7489",
+  V: "#5d87bd",
+  Vala: "#fbe5cd",
+  Verilog: "#b2b7f8",
+  VHDL: "#adb2cb",
+  Vue: "#41b883",
+  WebAssembly: "#04133b",
+  Zig: "#ec915c",
 };
 
-
-
 const LanguageBar = ({ languages }: { languages: Language }) => {
-  const totalBytes = Object.values(languages).reduce((sum, value) => sum + value, 0);
+  const totalBytes = Object.values(languages).reduce(
+    (sum, value) => sum + value,
+    0
+  );
 
-  const percentages = Object.entries(languages).map(([name, bytes]) => ({
-    name,
-    percentage: (bytes / totalBytes) * 100
-  })).sort((a, b) => b.percentage - a.percentage);
+  const percentages = Object.entries(languages)
+    .map(([name, bytes]) => ({
+      name,
+      percentage: (bytes / totalBytes) * 100,
+    }))
+    .sort((a, b) => b.percentage - a.percentage);
 
   return (
     <div className="space-y-4">
@@ -158,7 +176,7 @@ const LanguageBar = ({ languages }: { languages: Language }) => {
                 <div
                   style={{
                     width: `${percentage}%`,
-                    backgroundColor: languageColors[name] || '#ededed'
+                    backgroundColor: languageColors[name] || "#ededed",
                   }}
                   className="transition-opacity hover:opacity-80"
                 />
@@ -170,9 +188,13 @@ const LanguageBar = ({ languages }: { languages: Language }) => {
                 <div className="flex items-center gap-2">
                   <div
                     className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: languageColors[name] || '#ededed' }}
+                    style={{
+                      backgroundColor: languageColors[name] || "#ededed",
+                    }}
                   />
-                  <span>{name}: {percentage.toFixed(1)}%</span>
+                  <span>
+                    {name}: {percentage.toFixed(1)}%
+                  </span>
                 </div>
               </TooltipContent>
             </Tooltip>
@@ -187,7 +209,7 @@ const LanguageBar = ({ languages }: { languages: Language }) => {
             <div key={name} className="flex items-center gap-2">
               <span
                 className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: languageColors[name] || '#ededed' }}
+                style={{ backgroundColor: languageColors[name] || "#ededed" }}
               />
               <span className="font-medium text-white">{name}</span>
               <span className="text-gray-400">{percentage.toFixed(1)}%</span>
@@ -200,106 +222,118 @@ const LanguageBar = ({ languages }: { languages: Language }) => {
 
 function getRandomGradient() {
   const colors = [
-    'from-purple-500 to-pink-500',
-    'from-blue-500 to-teal-500',
-    'from-orange-500 to-red-500',
-    'from-green-400 to-blue-500',
-    'from-yellow-400 to-orange-500',
+    "from-purple-500 to-pink-500",
+    "from-blue-500 to-teal-500",
+    "from-orange-500 to-red-500",
+    "from-green-400 to-blue-500",
+    "from-yellow-400 to-orange-500",
   ];
-  return `bg-gradient-to-br ${colors[Math.floor(Math.random() * colors.length)]}`;
+  return `bg-gradient-to-br ${
+    colors[Math.floor(Math.random() * colors.length)]
+  }`;
 }
 
 export default function GithubProjectsPage() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
   const [savedProjects, setSavedProjects] = useState<string[]>(() => {
-    if (typeof window !== 'undefined') {
-      return JSON.parse(localStorage.getItem('savedProjects') || '[]');
+    if (typeof window !== "undefined") {
+      return JSON.parse(localStorage.getItem("savedProjects") || "[]");
     }
     return [];
   });
   const [showDiscordDialog, setShowDiscordDialog] = useState(false);
   const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>({
-    status: '',
-    message: ''
+    status: "",
+    message: "",
   });
 
   const [currentPage, setCurrentPage] = useState(1);
   const [projectRequest, setProjectRequest] = useState({
-    title: '',
-    githubLink: '',
-    description: '',
-    reason: ''
+    title: "",
+    githubLink: "",
+    description: "",
+    reason: "",
   });
-  const [sortBy, setSortBy] = useState<SortOption>('none');
-
+  const [sortBy, setSortBy] = useState<SortOption>("none");
 
   const projectsPerPage = 9;
 
   useEffect(() => {
-    localStorage.setItem('savedProjects', JSON.stringify(savedProjects));
+    localStorage.setItem("savedProjects", JSON.stringify(savedProjects));
   }, [savedProjects]);
 
   useEffect(() => {
     const fetchProjects = async () => {
-      const response = await fetch('/api/projects');
+      const response = await fetch("/api/projects");
       const data = await response.json();
-      setProjects(data.map((project: Project) => ({
-        ...project,
-        color: getRandomGradient(),
-      })));
+      setProjects(
+        data.map((project: Project) => ({
+          ...project,
+          color: getRandomGradient(),
+        }))
+      );
     };
     fetchProjects();
   }, []);
-  type SortOption = 'none' | 'stars' | 'forks';
+  type SortOption = "none" | "stars" | "forks";
 
   const sortProjects = (projects: Project[], sortBy: SortOption) => {
-    if (sortBy === 'none') return projects;
-    
-    return [...projects].sort((a, b) => {
+    if (sortBy === "none") return projects;
 
-      const aValue = parseFloat(a[sortBy].toLowerCase().replace(/[,k]/g, '')) * 
-        (a[sortBy].toLowerCase().includes('k') ? 1000 : 1);
-      const bValue = parseFloat(b[sortBy].toLowerCase().replace(/[,k]/g, '')) * 
-        (b[sortBy].toLowerCase().includes('k') ? 1000 : 1);
-      
+    return [...projects].sort((a, b) => {
+      const aValue =
+        parseFloat(a[sortBy].toLowerCase().replace(/[,k]/g, "")) *
+        (a[sortBy].toLowerCase().includes("k") ? 1000 : 1);
+      const bValue =
+        parseFloat(b[sortBy].toLowerCase().replace(/[,k]/g, "")) *
+        (b[sortBy].toLowerCase().includes("k") ? 1000 : 1);
 
       if (isNaN(aValue)) return 1;
       if (isNaN(bValue)) return -1;
       if (isNaN(aValue) && isNaN(bValue)) return 0;
-      
+
       return bValue - aValue;
     });
   };
   const filteredProjects = sortProjects(
-    projects.filter((project) =>
-      project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      Object.keys(project.languages).some((lang) =>
-        lang.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+    projects.filter(
+      (project) =>
+        project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.tags.some((tag) =>
+          tag.toLowerCase().includes(searchTerm.toLowerCase())
+        ) ||
+        Object.keys(project.languages).some((lang) =>
+          lang.toLowerCase().includes(searchTerm.toLowerCase())
+        )
     ),
     sortBy
   );
 
   const indexOfLastProject = currentPage * projectsPerPage;
   const indexOfFirstProject = indexOfLastProject - projectsPerPage;
-  const currentProjects = filteredProjects.slice(indexOfFirstProject, indexOfLastProject);
+  const currentProjects = filteredProjects.slice(
+    indexOfFirstProject,
+    indexOfLastProject
+  );
   const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
 
   const handleCardClick = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const handleProjectRequest = async () => {
-    if (!projectRequest.title.trim() ||
+    if (
+      !projectRequest.title.trim() ||
       !projectRequest.githubLink.trim() ||
       !projectRequest.description.trim() ||
-      !projectRequest.reason.trim()) {
+      !projectRequest.reason.trim()
+    ) {
       setSubmissionStatus({
-        status: 'error',
-        message: 'Please fill in all fields before submitting'
+        status: "error",
+        message: "Please fill in all fields before submitting",
       });
       return;
     }
@@ -310,40 +344,41 @@ export default function GithubProjectsPage() {
   const handleFinalSubmit = async () => {
     try {
       setSubmissionStatus({
-        status: 'loading',
-        message: 'Submitting your request...'
+        status: "loading",
+        message: "Submitting your request...",
       });
 
-      const response = await fetch('/api/project-requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/project-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(projectRequest),
       });
 
-      if (!response.ok) throw new Error('Failed to submit request');
+      if (!response.ok) throw new Error("Failed to submit request");
 
       setSubmissionStatus({
-        status: 'success',
-        message: 'Thank you for contributing to the community! Your submission will be reviewed shortly.'
+        status: "success",
+        message:
+          "Thank you for contributing to the community! Your submission will be reviewed shortly.",
       });
 
       setProjectRequest({
-        title: '',
-        githubLink: '',
-        description: '',
-        reason: ''
+        title: "",
+        githubLink: "",
+        description: "",
+        reason: "",
       });
     } catch (error) {
       setSubmissionStatus({
-        status: 'error',
-        message: 'Failed to submit project request. Please try again.'
+        status: "error",
+        message: "Failed to submit project request. Please try again.",
       });
-      console.error('Failed to submit project request:', error);
+      console.error("Failed to submit project request:", error);
     }
   };
 
   const handleDiscordJoin = () => {
-    window.open('https://discord.gg/QtnFGDQj5S', '_blank');
+    window.open("https://discord.gg/QtnFGDQj5S", "_blank");
     handleFinalSubmit();
   };
 
@@ -378,14 +413,32 @@ export default function GithubProjectsPage() {
               />
             </div>
             <div className="flex justify-end max-w-6xl mx-auto mb-8">
-              <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
+              <Select
+                value={sortBy}
+                onValueChange={(value: SortOption) => setSortBy(value)}
+              >
                 <SelectTrigger className="w-[180px] bg-slate-800/50 border-slate-700 text-white">
                   <SelectValue placeholder="Sort by..." />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-800 border-slate-700">
-                  <SelectItem value="none" className="text-white hover:bg-slate-700">No sorting</SelectItem>
-                  <SelectItem value="stars" className="text-white hover:bg-slate-700">Most Stars</SelectItem>
-                  <SelectItem value="forks" className="text-white hover:bg-slate-700">Most Forks</SelectItem>
+                  <SelectItem
+                    value="none"
+                    className="text-white hover:bg-slate-700"
+                  >
+                    No sorting
+                  </SelectItem>
+                  <SelectItem
+                    value="stars"
+                    className="text-white hover:bg-slate-700"
+                  >
+                    Most Stars
+                  </SelectItem>
+                  <SelectItem
+                    value="forks"
+                    className="text-white hover:bg-slate-700"
+                  >
+                    Most Forks
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -398,9 +451,11 @@ export default function GithubProjectsPage() {
                 <div
                   key={project.name}
                   className="group relative cursor-pointer"
-                  onClick={() => handleCardClick(project.url)}
+                  onClick={() => router.push("/" + project.name)}
                 >
-                  <div className={`absolute inset-0 ${project.color} rounded-xl blur-md opacity-20 group-hover:opacity-30 transition-all duration-500`}></div>
+                  <div
+                    className={`absolute inset-0 ${project.color} rounded-xl blur-md opacity-20 group-hover:opacity-30 transition-all duration-500`}
+                  ></div>
                   <Card className="relative h-full bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-all duration-500 backdrop-blur-sm transform-gpu hover:-translate-y-2 hover:scale-105">
                     <CardContent className="p-6">
                       <div className="flex justify-between items-start mb-4">
@@ -410,7 +465,9 @@ export default function GithubProjectsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className={`text-gray-400 ${isSaved ? 'text-green-500' : 'hover:text-white'}`}
+                          className={`text-gray-400 ${
+                            isSaved ? "text-green-500" : "hover:text-white"
+                          }`}
                           onClick={(e) => {
                             e.stopPropagation();
                             if (isSaved) {
@@ -420,10 +477,12 @@ export default function GithubProjectsPage() {
                             }
                           }}
                         >
-                          {isSaved ? 'Unsave' : 'Save'}
+                          {isSaved ? "Unsave" : "Save"}
                         </Button>
                       </div>
-                      <p className="text-gray-300 mb-6">{project.description}</p>
+                      <p className="text-gray-300 mb-6">
+                        {project.description}
+                      </p>
                       <div className="flex flex-wrap gap-2 mb-6">
                         {project.tags.map((tag, tagIndex) => (
                           <div
@@ -461,7 +520,7 @@ export default function GithubProjectsPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
               className="bg-slate-800/50 border-slate-700 text-white hover:bg-slate-700/50"
             >
@@ -473,7 +532,9 @@ export default function GithubProjectsPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
               disabled={currentPage === totalPages}
               className="bg-slate-800/50 border-slate-700 text-white hover:bg-slate-700/50"
             >
@@ -484,7 +545,9 @@ export default function GithubProjectsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
             <Card className="bg-slate-800/50 border-slate-700 h-fit">
               <CardHeader>
-                <CardTitle className="text-white text-xl text-center">Request a Project</CardTitle>
+                <CardTitle className="text-white text-xl text-center">
+                  Request a Project
+                </CardTitle>
                 <CardDescription className="text-gray-300 text-center">
                   Share an amazing project with the community
                 </CardDescription>
@@ -493,7 +556,12 @@ export default function GithubProjectsPage() {
                 <Input
                   placeholder="Project Title"
                   value={projectRequest.title}
-                  onChange={(e) => setProjectRequest(prev => ({ ...prev, title: e.target.value }))}
+                  onChange={(e) =>
+                    setProjectRequest((prev) => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
+                  }
                   className="bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-400"
                 />
 
@@ -502,7 +570,12 @@ export default function GithubProjectsPage() {
                   <Input
                     placeholder="GitHub Link"
                     value={projectRequest.githubLink}
-                    onChange={(e) => setProjectRequest(prev => ({ ...prev, githubLink: e.target.value }))}
+                    onChange={(e) =>
+                      setProjectRequest((prev) => ({
+                        ...prev,
+                        githubLink: e.target.value,
+                      }))
+                    }
                     className="bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-400"
                   />
                 </div>
@@ -510,27 +583,44 @@ export default function GithubProjectsPage() {
                 <Textarea
                   placeholder="What is this project about?"
                   value={projectRequest.description}
-                  onChange={(e) => setProjectRequest(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setProjectRequest((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
                   className="bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-400"
                 />
 
                 <Textarea
                   placeholder="Why do you think this is a good project?"
                   value={projectRequest.reason}
-                  onChange={(e) => setProjectRequest(prev => ({ ...prev, reason: e.target.value }))}
+                  onChange={(e) =>
+                    setProjectRequest((prev) => ({
+                      ...prev,
+                      reason: e.target.value,
+                    }))
+                  }
                   className="bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-400"
                 />
 
                 {submissionStatus.status && (
-                  <Alert className={`${submissionStatus.status === 'success' ? 'bg-green-500/20 border-green-500' :
-                    submissionStatus.status === 'error' ? 'bg-red-500/20 border-red-500' :
-                      'bg-blue-500/20 border-blue-500'
-                    } text-white border`}>
+                  <Alert
+                    className={`${
+                      submissionStatus.status === "success"
+                        ? "bg-green-500/20 border-green-500"
+                        : submissionStatus.status === "error"
+                        ? "bg-red-500/20 border-red-500"
+                        : "bg-blue-500/20 border-blue-500"
+                    } text-white border`}
+                  >
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>
-                      {submissionStatus.status === 'success' ? 'Success!' :
-                        submissionStatus.status === 'error' ? 'Error' :
-                          'Submitting...'}
+                      {submissionStatus.status === "success"
+                        ? "Success!"
+                        : submissionStatus.status === "error"
+                        ? "Error"
+                        : "Submitting..."}
                     </AlertTitle>
                     <AlertDescription>
                       {submissionStatus.message}
@@ -546,10 +636,16 @@ export default function GithubProjectsPage() {
                 </Button>
 
                 <div className="flex items-center justify-center gap-4 mt-4">
-                  <Badge variant="secondary" className="bg-slate-700 text-gray-300">
+                  <Badge
+                    variant="secondary"
+                    className="bg-slate-700 text-gray-300"
+                  >
                     <Star className="w-4 h-4 mr-1" /> Community Driven
                   </Badge>
-                  <Badge variant="secondary" className="bg-slate-700 text-gray-300">
+                  <Badge
+                    variant="secondary"
+                    className="bg-slate-700 text-gray-300"
+                  >
                     <Heart className="w-4 h-4 mr-1" /> Open Source
                   </Badge>
                 </div>
@@ -569,23 +665,36 @@ export default function GithubProjectsPage() {
               <CardContent className="space-y-4 text-gray-300">
                 <div className="flex items-start gap-2">
                   <Check className="text-green-500 mt-1" />
-                  <p>Share projects that have made a significant impact on your development workflow</p>
+                  <p>
+                    Share projects that have made a significant impact on your
+                    development workflow
+                  </p>
                 </div>
                 <div className="flex items-start gap-2">
                   <Check className="text-green-500 mt-1" />
-                  <p>Include detailed descriptions to help others understand the projects value</p>
+                  <p>
+                    Include detailed descriptions to help others understand the
+                    projects value
+                  </p>
                 </div>
                 <div className="flex items-start gap-2">
                   <Check className="text-green-500 mt-1" />
-                  <p>Ensure the project is actively maintained and well-documented</p>
+                  <p>
+                    Ensure the project is actively maintained and
+                    well-documented
+                  </p>
                 </div>
 
                 <div className="pt-4">
-                  <h3 className="text-lg font-semibold mb-3">What makes a good submission?</h3>
+                  <h3 className="text-lg font-semibold mb-3">
+                    What makes a good submission?
+                  </h3>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-2">
                       <Check className="text-green-500 mt-1" />
-                      <p>Clear description of the projects purpose and benefits</p>
+                      <p>
+                        Clear description of the projects purpose and benefits
+                      </p>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="text-green-500 mt-1" />
@@ -616,7 +725,8 @@ export default function GithubProjectsPage() {
             </AlertDialogTitle>
             <AlertDialogDescription className="text-gray-300 space-y-4">
               <p>
-                Dont miss updates about your submission! Join our vibrant Discord community to:
+                Dont miss updates about your submission! Join our vibrant
+                Discord community to:
               </p>
               <ul className="space-y-2">
                 <li className="flex items-start gap-2">
@@ -639,7 +749,10 @@ export default function GithubProjectsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleFinalSubmit} className="bg-slate-700 text-white hover:bg-slate-600 border-slate-600">
+            <AlertDialogCancel
+              onClick={handleFinalSubmit}
+              className="bg-slate-700 text-white hover:bg-slate-600 border-slate-600"
+            >
               Submit Without Joining
             </AlertDialogCancel>
             <AlertDialogAction
@@ -652,5 +765,5 @@ export default function GithubProjectsPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
-};
+  );
+}
