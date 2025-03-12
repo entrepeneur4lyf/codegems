@@ -95,11 +95,13 @@ const LeaderboardDisplay: React.FC = () => {
                   </div>
 
                   {/* User Avatar */}
-                  <img
-                    src={leaderboardUser.avatarUrl}
-                    alt={leaderboardUser.displayName}
-                    className="w-12 h-12 rounded-full"
-                  />
+                  {leaderboardUser.avatarUrl ? (
+                    <img
+                      src={leaderboardUser.avatarUrl}
+                      alt={leaderboardUser.displayName}
+                      className="w-12 h-12 rounded-full"
+                    />
+                  ) : null}
                 </div>
 
                 <div className="flex-grow">

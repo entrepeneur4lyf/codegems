@@ -73,7 +73,7 @@ const getBadges = () => {
   return JSON.parse(data);
 };
 
-const saveBadges = (badges) => {
+const saveBadges = (badges: any) => {
   fs.writeFileSync(badgesFilePath, JSON.stringify(badges, null, 2));
 };
 

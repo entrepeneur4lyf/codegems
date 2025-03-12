@@ -39,6 +39,12 @@ interface Comment {
 const usersFilePath = path.join(process.cwd(), "data", "users.json");
 const badgesFilePath = path.join(process.cwd(), "data", "badges.json");
 
+const validatePassword = (password: string): boolean => {
+  // At least 8 characters, one uppercase, one lowercase, one number
+  const passwordRegex = /^(?=.*[a.z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+  return passwordRegex.test(password);
+};
+
 // Utility functions with explicit typing
 const getUsers = (): User[] => {
   if (!fs.existsSync(usersFilePath)) {
@@ -217,6 +223,13 @@ export async function createUser(request: Request) {
   try {
     const body = await request.json();
     const { username, password, email, displayName } = body;
+
+    if (!validatePassword(password)) {
+      return NextResponse.json(
+        { error: "Password does not meet complexity requirements" },
+        { status: 400 }
+      );
+    }
 
     if (!username || !password || !email) {
       return NextResponse.json(

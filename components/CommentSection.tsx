@@ -492,11 +492,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
           <div className="flex items-center gap-3">
             {commentUser && (
               <>
-                <img
-                  src={commentUser.avatarUrl}
-                  alt={commentUser.username}
-                  className="w-8 h-8 rounded-full"
-                />
+                {commentUser && commentUser.avatarUrl ? (
+                  <img
+                    src={commentUser.avatarUrl}
+                    alt={commentUser.username}
+                    className="w-8 h-8 rounded-full"
+                  />
+                ) : null}
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-white">

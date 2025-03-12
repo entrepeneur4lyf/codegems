@@ -125,11 +125,13 @@ const Navbar = () => {
                     className="rounded-full p-2 bg-slate-800/80 border border-slate-700"
                   >
                     <div className="flex items-center gap-2">
-                      <img
-                        src={user?.avatarUrl}
-                        alt={user?.displayName}
-                        className="w-6 h-6 rounded-full"
-                      />
+                      {isAuthenticated && user?.avatarUrl ? (
+                        <img
+                          src={user.avatarUrl}
+                          alt={user.displayName}
+                          className="w-6 h-6 rounded-full"
+                        />
+                      ) : null}
                       <span className="text-white text-sm hidden md:block pr-1">
                         {user?.displayName}
                       </span>

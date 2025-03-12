@@ -105,6 +105,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const checkTokenValidity = () => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const userData = JSON.parse(storedUser);
+      const tokenExpiration = userData.tokenExpiration;
+
+      if (tokenExpiration && Date.now() > tokenExpiration) {
+        // Token expired, log out user
+        logout();
+        return false;
+      }
+    }
+    return true;
+  };
+
+  useEffect(() => {
+    checkTokenValidity();
+  }, []);
+
   const register = async (
     username: string,
     email: string,

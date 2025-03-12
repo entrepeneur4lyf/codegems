@@ -1,1 +1,58 @@
-[]
+[
+    {
+      "id": "newcomer",
+      "name": "Newcomer",
+      "description": "Erstelle ein Konto",
+      "icon": "Gift",
+      "points": 10
+    },
+    {
+      "id": "first_rating",
+      "name": "Kritiker",
+      "description": "Gib deine erste Bewertung ab",
+      "icon": "Star",
+      "points": 20
+    },
+    {
+      "id": "first_comment",
+      "name": "Kommentator",
+      "description": "Schreibe deinen ersten Kommentar",
+      "icon": "MessageSquare",
+      "points": 20
+    },
+    {
+      "id": "project_submitter",
+      "name": "Entdecker",
+      "description": "Reiche dein erstes Projekt ein",
+      "icon": "Search",
+      "points": 50
+    },
+    {
+      "id": "rating_10",
+      "name": "Bewertungs-Meister",
+      "description": "Gib 10 Bewertungen ab",
+      "icon": "Award",
+      "points": 100
+    },
+    {
+      "id": "comment_10",
+      "name": "Diskussions-Meister",
+      "description": "Schreibe 10 Kommentare",
+      "icon": "MessageCircle",
+      "points": 100
+    },
+    {
+      "id": "level_5",
+      "name": "Fortgeschritten",
+      "description": "Erreiche Level 5",
+      "icon": "TrendingUp",
+      "points": 100
+    },
+    {
+      "id": "level_10",
+      "name": "Experte",
+      "description": "Erreiche Level 10",
+      "icon": "Award",
+      "points": 150
+    }
+  ]
