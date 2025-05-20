@@ -58,10 +58,6 @@ const LeaderboardDisplay: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white text-center sm:text-left flex items-center gap-2">
-        <Trophy className="text-yellow-500" />
-        Top Mitwirkende
-      </h2>
 
       <div className="grid grid-cols-1 gap-4">
         {users.map((leaderboardUser, index) => {

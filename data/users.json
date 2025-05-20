@@ -2,7 +2,7 @@
   {
     "id": "user_1741780706229",
     "username": "Bebedi",
-    "email": "bebedi15@gmail.com",
+    "email": "test@gmail.com",
     "displayName": "Sparths",
     "passwordHash": "056d0483db594b91f8f54d255c16cef3e9ca45abc69ee8690f9c3d05c03e26773921e8fdf2da05500bacfacdf378fb3b210446d2f754e367beb02ae0a919b883",
     "salt": "5a2ec46877e9433c4e9d4d6bff144bed",
@@ -15,5 +15,22 @@
     ],
     "createdAt": "2025-03-12T11:58:26.229Z",
     "avatarUrl": "https://api.dicebear.com/7.x/bottts/svg?seed=Bebedi"
+  },
+  {
+    "id": "user_1747740246840",
+    "username": "Test13",
+    "email": "hallo@gmail.com",
+    "displayName": "Test1234",
+    "passwordHash": "ec2fa092a949fc3a513ccf2fc7628d2a82d79aa9afe6dbf56a0c8b5caa1c48d6265f09fd864eefd08d48b9dcf792011a94da66a1daddee84270dc2995c5733b0",
+    "salt": "9aa10eb1c1a9ae3071ed32dc332a11b0",
+    "points": 57,
+    "level": 1,
+    "badges": [
+      "newcomer",
+      "first_rating",
+      "first_comment"
+    ],
+    "createdAt": "2025-05-20T11:24:06.840Z",
+    "avatarUrl": "https://api.dicebear.com/7.x/bottts/svg?seed=Test13"
   }
 ]

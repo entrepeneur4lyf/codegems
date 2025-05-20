@@ -1,4 +1,5 @@
-"use client";
+// Fix to ProjectDetailPage.tsx
+// Improved data fetching, error handling, and UI display
 
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,6 +12,7 @@ import {
   Github,
   Bookmark,
   CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import { useSaved } from "@/app/saved/SavedContext";
 import RatingSystem from "@/components/RatingSystem";
@@ -21,6 +23,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useRouter } from "next/navigation";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface Language {
   [key: string]: number;
@@ -58,6 +62,17 @@ const languageColors: { [key: string]: string } = {
   Batchfile: "#C1F12E",
   Makefile: "#427819",
   Jinja: "#a52a22",
+  // Add more language colors here as needed
+  Rust: "#dea584",
+  Go: "#00ADD8",
+  Java: "#b07219",
+  Kotlin: "#F18E33",
+  Swift: "#ffac45",
+  "C++": "#f34b7d",
+  "C#": "#178600",
+  "C": "#555555",
+  PHP: "#4F5D95",
+  Dart: "#00B4AB",
 };
 
 const LanguageBar = ({ languages }: { languages: Language }) => {
@@ -134,13 +149,23 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
 }) => {
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { savedProjects, addProject, removeProject } = useSaved();
+  const router = useRouter();
   const isSaved = savedProjects.includes(projectName);
 
   useEffect(() => {
     const fetchProject = async () => {
+      setIsLoading(true);
+      setError(null);
+      
       try {
         const response = await fetch("/api/projects");
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch projects: ${response.status}`);
+        }
+        
         const projects = await response.json();
         const foundProject = projects.find(
           (p: Project) => p.name === projectName
@@ -148,9 +173,12 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
 
         if (foundProject) {
           setProject(foundProject);
+        } else {
+          setError("Project not found");
         }
       } catch (error) {
         console.error("Error fetching project:", error);
+        setError("Failed to load project data. Please try again later.");
       } finally {
         setIsLoading(false);
       }
@@ -167,29 +195,38 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
     }
   };
 
+  const goBack = () => {
+    router.push("/");
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 mt-16">
         <div className="container mx-auto px-4">
-          <div className="flex justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mb-4"></div>
+            <p className="text-gray-400">Loading project details...</p>
           </div>
         </div>
       </div>
     );
   }
 
-  if (!project) {
+  if (error || !project) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 mt-16">
         <div className="container mx-auto px-4">
-          <div className="text-center py-20">
-            <h1 className="text-3xl font-bold text-white">
-              Projekt nicht gefunden
-            </h1>
-            <p className="text-gray-400 mt-4">
-              Das gesuchte Projekt existiert nicht.
-            </p>
+          <div className="max-w-md mx-auto text-center py-20">
+            <Alert className="bg-red-500/20 border-red-500 mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>
+                {error || "Project not found"}
+              </AlertDescription>
+            </Alert>
+            <Button onClick={goBack} className="bg-slate-800 hover:bg-slate-700 text-white">
+              Return to Home
+            </Button>
           </div>
         </div>
       </div>
@@ -220,7 +257,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
                   ) : (
                     <Bookmark className="mr-2 h-4 w-4" />
                   )}
-                  {isSaved ? "Gespeichert" : "Speichern"}
+                  {isSaved ? "Saved" : "Save"}
                 </Button>
 
                 <a href={project.url} target="_blank" rel="noopener noreferrer">
@@ -252,7 +289,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
                 className="flex items-center gap-1 bg-slate-800/80 px-3 py-1.5 rounded-full hover:bg-slate-700/80 transition-colors"
               >
                 <ExternalLink className="h-4 w-4 text-blue-400" />
-                <span className="text-gray-300">Öffnen</span>
+                <span className="text-gray-300">Open</span>
               </a>
             </div>
           </div>

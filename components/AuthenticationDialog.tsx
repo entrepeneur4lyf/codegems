@@ -142,12 +142,9 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
   const content = (
     <DialogContent className="bg-slate-800 border-slate-700 text-white sm:max-w-md">
       <DialogHeader>
-        <DialogTitle className="text-xl">
-          Anmelden oder Registrieren
-        </DialogTitle>
+        <DialogTitle className="text-xl">Sign In or Register</DialogTitle>
         <DialogDescription className="text-gray-400">
-          Melde dich an, um Projekte zu bewerten, zu kommentieren und Abzeichen
-          freizuschalten.
+          Sign in to rate projects, leave comments, and unlock badges.
         </DialogDescription>
       </DialogHeader>
 
@@ -162,13 +159,13 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
             value="login"
             className="data-[state=active]:bg-slate-900 data-[state=active]:text-white"
           >
-            <LogIn className="h-4 w-4 mr-2" /> Anmelden
+            <LogIn className="h-4 w-4 mr-2" /> Sign In
           </TabsTrigger>
           <TabsTrigger
             value="register"
             className="data-[state=active]:bg-slate-900 data-[state=active]:text-white"
           >
-            <UserPlus className="h-4 w-4 mr-2" /> Registrieren
+            <UserPlus className="h-4 w-4 mr-2" /> Register
           </TabsTrigger>
         </TabsList>
 

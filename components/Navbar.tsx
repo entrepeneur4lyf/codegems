@@ -44,16 +44,14 @@ const NavLink = ({
   <Link href={href}>
     <button
       onClick={() => setActiveNav(href)}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${
-        activeNav === href
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${activeNav === href
           ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white"
           : "text-gray-400 hover:text-white"
-      }`}
+        }`}
     >
       <Icon
-        className={`h-5 w-5 transition-transform duration-300 ${
-          activeNav === href ? "scale-110" : ""
-        }`}
+        className={`h-5 w-5 transition-transform duration-300 ${activeNav === href ? "scale-110" : ""
+          }`}
       />
       <span className="hidden md:block">{text}</span>
     </button>
@@ -93,13 +91,8 @@ const Navbar = () => {
               activeNav={activeNav}
               setActiveNav={setActiveNav}
             />
-            <NavLink
-              icon={Bookmark}
-              text="Gespeichert"
-              href="/saved"
-              activeNav={activeNav}
-              setActiveNav={setActiveNav}
-            />
+            <NavLink icon={Bookmark} text="Saved" href="/saved" activeNav={activeNav} setActiveNav={setActiveNav} />
+
             <NavLink
               icon={Send}
               text="Projekt vorschlagen"
@@ -198,11 +191,10 @@ const Navbar = () => {
       </div>
 
       <div
-        className={`md:hidden transition-all duration-300 ${
-          isMenuOpen
+        className={`md:hidden transition-all duration-300 ${isMenuOpen
             ? "max-h-screen opacity-100 border-b border-slate-700"
             : "max-h-0 opacity-0 overflow-hidden"
-        }`}
+          }`}
       >
         <div className="px-4 py-2 space-y-2">
           <NavLink

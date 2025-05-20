@@ -1,5 +1,5 @@
-"use client";
-
+// Fix the token expiration and validation in AuthContext.tsx
+"use client"
 import React, {
   createContext,
   useContext,
@@ -10,6 +10,7 @@ import React, {
 import { useToast } from "@/hooks/use-toast";
 
 interface User {
+  tokenExpiration: any;
   id: string;
   username: string;
   displayName: string;
@@ -38,17 +39,33 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Token expiration time (24 hours)
+const TOKEN_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Beim Laden der Seite Benutzer aus dem lokalen Speicher laden
+  // Load user from local storage on page load
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const userData = JSON.parse(storedUser);
+        
+        // Check if token is expired
+        if (userData.tokenExpiration && Date.now() > userData.tokenExpiration) {
+          // Token expired, log out user
+          localStorage.removeItem("user");
+          setUser(null);
+          toast({
+            title: "Session expired",
+            description: "Please sign in again.",
+          });
+        } else {
+          setUser(userData);
+        }
       } catch (error) {
         console.error("Error parsing user data:", error);
         localStorage.removeItem("user");
@@ -75,28 +92,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!response.ok) {
         const errorData = await response.json();
         toast({
-          title: "Anmeldung fehlgeschlagen",
-          description: errorData.error || "Ungültige Anmeldedaten.",
+          title: "Login failed",
+          description: errorData.error || "Invalid credentials.",
           variant: "destructive",
         });
         return false;
       }
 
       const userData = await response.json();
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
+      
+      // Add token expiration
+      const userWithExpiration = {
+        ...userData,
+        tokenExpiration: Date.now() + TOKEN_EXPIRATION_TIME
+      };
+      
+      setUser(userWithExpiration);
+      localStorage.setItem("user", JSON.stringify(userWithExpiration));
 
       toast({
-        title: "Erfolgreich angemeldet",
-        description: `Willkommen zurück, ${userData.displayName}!`,
+        title: "Successfully signed in",
+        description: `Welcome back, ${userData.displayName}!`,
       });
 
       return true;
     } catch (error) {
       console.error("Login error:", error);
       toast({
-        title: "Fehler",
-        description: "Ein unerwarteter Fehler ist aufgetreten.",
+        title: "Error",
+        description: "An unexpected error occurred.",
         variant: "destructive",
       });
       return false;
@@ -105,23 +129,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const checkTokenValidity = () => {
+  // Check token validity
+  const checkTokenValidity = (): boolean => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      const userData = JSON.parse(storedUser);
-      const tokenExpiration = userData.tokenExpiration;
+      try {
+        const userData = JSON.parse(storedUser);
+        const tokenExpiration = userData.tokenExpiration;
 
-      if (tokenExpiration && Date.now() > tokenExpiration) {
-        // Token expired, log out user
-        logout();
+        if (tokenExpiration && Date.now() > tokenExpiration) {
+          // Token expired, log out user
+          logout();
+          toast({
+            title: "Session expired",
+            description: "Please sign in again.",
+          });
+          return false;
+        }
+        return true;
+      } catch (error) {
+        console.error("Error checking token validity:", error);
         return false;
       }
     }
-    return true;
+    return false;
   };
 
   useEffect(() => {
+    // Check token validity on component mount
     checkTokenValidity();
+    
+    // Set up interval to check token validity periodically (every 5 minutes)
+    const intervalId = setInterval(checkTokenValidity, 5 * 60 * 1000);
+    
+    return () => clearInterval(intervalId);
   }, []);
 
   const register = async (
@@ -144,28 +185,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!response.ok) {
         const errorData = await response.json();
         toast({
-          title: "Registrierung fehlgeschlagen",
-          description: errorData.error || "Fehler bei der Registrierung.",
+          title: "Registration failed",
+          description: errorData.error || "Error during registration.",
           variant: "destructive",
         });
         return false;
       }
 
       const userData = await response.json();
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
+      
+      // Add token expiration
+      const userWithExpiration = {
+        ...userData,
+        tokenExpiration: Date.now() + TOKEN_EXPIRATION_TIME
+      };
+      
+      setUser(userWithExpiration);
+      localStorage.setItem("user", JSON.stringify(userWithExpiration));
 
       toast({
-        title: "Registrierung erfolgreich",
-        description: `Willkommen, ${userData.displayName}!`,
+        title: "Registration successful",
+        description: `Welcome, ${userData.displayName}!`,
       });
 
       return true;
     } catch (error) {
       console.error("Registration error:", error);
       toast({
-        title: "Fehler",
-        description: "Ein unerwarteter Fehler ist aufgetreten.",
+        title: "Error",
+        description: "An unexpected error occurred.",
         variant: "destructive",
       });
       return false;
@@ -178,8 +226,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     localStorage.removeItem("user");
     toast({
-      title: "Abgemeldet",
-      description: "Du wurdest erfolgreich abgemeldet.",
+      title: "Signed out",
+      description: "You have been successfully signed out.",
     });
   };
 
@@ -188,6 +236,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       setIsLoading(true);
+
+      // Check token validity before proceeding
+      if (!checkTokenValidity()) {
+        return false;
+      }
 
       const response = await fetch("/api/users", {
         method: "PUT",
@@ -200,31 +253,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!response.ok) {
         const errorData = await response.json();
         toast({
-          title: "Update fehlgeschlagen",
+          title: "Update failed",
           description:
-            errorData.error || "Fehler beim Aktualisieren des Profils.",
+            errorData.error || "Error updating profile.",
           variant: "destructive",
         });
         return false;
       }
 
       const updatedUserData = await response.json();
-      const newUserData = { ...user, ...updatedUserData };
+      const newUserData = { 
+        ...user, 
+        ...updatedUserData,
+        tokenExpiration: user.tokenExpiration // Preserve token expiration
+      };
 
       setUser(newUserData);
       localStorage.setItem("user", JSON.stringify(newUserData));
 
       toast({
-        title: "Profil aktualisiert",
-        description: "Dein Profil wurde erfolgreich aktualisiert.",
+        title: "Profile updated",
+        description: "Your profile has been successfully updated.",
       });
 
       return true;
     } catch (error) {
       console.error("Update user error:", error);
       toast({
-        title: "Fehler",
-        description: "Ein unerwarteter Fehler ist aufgetreten.",
+        title: "Error",
+        description: "An unexpected error occurred.",
         variant: "destructive",
       });
       return false;

@@ -23,10 +23,9 @@ const BadgesPage = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 mt-10">
         <div className="container mx-auto px-4">
           <div className="max-w-md mx-auto bg-slate-800/50 border border-slate-700 rounded-lg p-8 text-center">
-            <h1 className="text-2xl font-bold text-white mb-4">Abzeichen</h1>
-            <p className="text-gray-400 mb-6">
-              Du musst angemeldet sein, um deine Abzeichen zu sehen.
-            </p>
+<h1 className="text-2xl font-bold text-white mb-4">Badges</h1>
+<p className="text-gray-400 mb-6">You need to be signed in to view your badges.</p>
+
             <Button
               onClick={() => setShowAuthDialog(true)}
               className="bg-purple-500 hover:bg-purple-600 text-white"

@@ -7,5 +7,14 @@
     "review": "Sehr gut",
     "createdAt": "2025-03-12T12:01:42.299Z",
     "updatedAt": "2025-03-12T12:01:42.299Z"
+  },
+  {
+    "id": "rating_1747740334612",
+    "projectName": "activitywatch",
+    "userId": "user_1747740246840",
+    "rating": 5,
+    "review": "nice",
+    "createdAt": "2025-05-20T11:25:34.612Z",
+    "updatedAt": "2025-05-20T11:25:34.612Z"
   }
 ]
