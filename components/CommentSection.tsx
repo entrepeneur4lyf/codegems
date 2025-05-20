@@ -85,30 +85,30 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
 
   // Function to fetch user data for a list of user IDs
   const fetchUserData = async (userIds: string[]) => {
-    if (!userIds.length) return {};
+  if (!userIds.length) return {};
 
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('id, username, display_name, avatar_url')
-        .in('id', userIds);
-      
-      if (error) {
-        console.error("Error fetching user data:", error);
-        return {};
-      }
-
-      const usersMap: Record<string, User> = {};
-      data.forEach((userData: User) => {
-        usersMap[userData.id] = userData;
-      });
-
-      return usersMap;
-    } catch (error) {
-      console.error("Error in fetchUserData:", error);
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, username, display_name, avatar_url')
+      .in('id', userIds);
+    
+    if (error) {
+      console.error("Error fetching user data:", error);
       return {};
     }
-  };
+
+    const usersMap: Record<string, User> = {};
+    data.forEach((userData: User) => {
+      usersMap[userData.id] = userData;
+    });
+
+    return usersMap;
+  } catch (error) {
+    console.error("Error in fetchUserData:", error);
+    return {};
+  }
+};
 
   // Load comments for this project
   useEffect(() => {
@@ -121,7 +121,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
           const commentsData = await response.json();
           
           // Extract unique user IDs
-          const userIds = Array.from(new Set(commentsData.map((c: Comment) => c.user_id)));
+          const userIds : string[] = Array.from(new Set(commentsData.map((c: Comment) => c.user_id)));
           
           // Fetch user data for all comments in a single request
           const usersData = await fetchUserData(userIds);

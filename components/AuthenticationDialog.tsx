@@ -14,7 +14,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { LogIn, UserPlus, Mail, Lock, User, Gift } from "lucide-react";
+import { LogIn, UserPlus, Mail, Lock, User, Gift, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface AuthDialogProps {
   trigger?: React.ReactNode;
@@ -31,6 +32,7 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<string>(defaultTab);
   const [isLoading, setIsLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Login fields
   const [loginUsername, setLoginUsername] = useState("");
@@ -50,6 +52,7 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
 
   const validateLogin = () => {
     const newErrors: Record<string, string> = {};
+    setFormError(null);
 
     if (!loginUsername.trim()) {
       newErrors.loginUsername = "Username is required";
@@ -65,6 +68,7 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
 
   const validateRegister = () => {
     const newErrors: Record<string, string> = {};
+    setFormError(null);
 
     if (!registerUsername.trim()) {
       newErrors.registerUsername = "Username is required";
@@ -100,13 +104,19 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
     if (!validateLogin()) return;
 
     setIsLoading(true);
+    setFormError(null);
 
     try {
       const success = await login(loginUsername, loginPassword);
 
       if (success && onOpenChange) {
         onOpenChange(false);
+      } else if (!success) {
+        setFormError("Login failed. Please check your credentials and try again.");
       }
+    } catch (error) {
+      console.error("Login error:", error);
+      setFormError("An unexpected error occurred. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -118,6 +128,7 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
     if (!validateRegister()) return;
 
     setIsLoading(true);
+    setFormError(null);
 
     try {
       const success = await register(
@@ -129,7 +140,12 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
 
       if (success && onOpenChange) {
         onOpenChange(false);
+      } else if (!success) {
+        setFormError("Registration failed. The username or email might already be in use.");
       }
+    } catch (error) {
+      console.error("Registration error:", error);
+      setFormError("An unexpected error occurred. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -148,10 +164,23 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
         </DialogDescription>
       </DialogHeader>
 
+      {formError && (
+        <Alert className="bg-red-500/20 border-red-500 mb-4">
+          <AlertCircle className="h-4 w-4 text-red-400" />
+          <AlertDescription className="text-red-200">
+            {formError}
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Tabs
         defaultValue={activeTab}
         value={activeTab}
-        onValueChange={setActiveTab}
+        onValueChange={(value) => {
+          setActiveTab(value);
+          setFormError(null);
+          setErrors({});
+        }}
         className="w-full"
       >
         <TabsList className="grid w-full grid-cols-2 bg-slate-700">

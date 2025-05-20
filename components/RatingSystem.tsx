@@ -110,7 +110,7 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
       const ratings = await response.json();
 
       // Extract unique user IDs
-      const userIds = Array.from(new Set(ratings.map((r: Rating) => r.user_id)));
+      const userIds : string[] = Array.from(new Set(ratings.map((r: Rating) => r.user_id)));
       
       // Fetch user data for all ratings in a single request
       const usersData = await fetchUserData(userIds);

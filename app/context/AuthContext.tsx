@@ -8,7 +8,6 @@ import React, {
 } from "react";
 import { useToast } from "@/hooks/use-toast";
 import supabase from "@/lib/supabase";
-import crypto from 'crypto';
 
 interface User {
   id: string;
@@ -23,6 +22,12 @@ interface User {
   tokenExpiration?: number;
 }
 
+// Extended interface for update operations with password change
+interface UserUpdate extends Partial<User> {
+  currentPassword?: string;
+  newPassword?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -35,13 +40,55 @@ interface AuthContextType {
     displayName?: string
   ) => Promise<boolean>;
   logout: () => void;
-  updateUser: (userData: Partial<User>) => Promise<boolean>;
+  updateUser: (userData: UserUpdate) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Token expiration time (24 hours)
 const TOKEN_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
+
+// Web Crypto API based hashing function
+async function hashPassword(password: string, salt: string): Promise<string> {
+  // Convert string to Uint8Array
+  const encoder = new TextEncoder();
+  const passwordData = encoder.encode(password);
+  const saltData = encoder.encode(salt);
+  
+  // Create a key from the password
+  const passwordKey = await window.crypto.subtle.importKey(
+    'raw',
+    passwordData,
+    { name: 'PBKDF2' },
+    false,
+    ['deriveBits']
+  );
+  
+  // Derive bits using PBKDF2
+  const derivedBits = await window.crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      salt: saltData,
+      iterations: 1000,
+      hash: 'SHA-512',
+    },
+    passwordKey,
+    512 // 64 bytes (512 bits)
+  );
+  
+  // Convert to hex string
+  const hashArray = Array.from(new Uint8Array(derivedBits));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  
+  return hashHex;
+}
+
+// Generate a random salt
+function generateSalt(): string {
+  const array = new Uint8Array(16);
+  window.crypto.getRandomValues(array);
+  return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
+}
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -100,9 +147,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Verify password
-      const hashedPassword = crypto
-        .pbkdf2Sync(password, userData.salt, 1000, 64, 'sha512')
-        .toString('hex');
+      const hashedPassword = await hashPassword(password, userData.salt);
 
       if (hashedPassword !== userData.password_hash) {
         toast({
@@ -123,7 +168,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         level: userData.level,
         badges: userData.badges,
         avatarUrl: userData.avatar_url,
-        token: crypto.randomBytes(32).toString('hex'), // Simple token
+        token: generateSalt(), // Simple token
         tokenExpiration: Date.now() + TOKEN_EXPIRATION_TIME
       };
       
@@ -226,11 +271,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      // Create password hash
-      const salt = crypto.randomBytes(16).toString('hex');
-      const passwordHash = crypto
-        .pbkdf2Sync(password, salt, 1000, 64, 'sha512')
-        .toString('hex');
+      // Create password hash using Web Crypto API
+      const salt = generateSalt();
+      const passwordHash = await hashPassword(password, salt);
 
       const userId = `user_${Date.now()}`;
       const newUser = {
@@ -256,7 +299,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.error("Error inserting user:", insertError);
         toast({
           title: "Registration failed",
-          description: "Error creating user account.",
+          description: "Error creating user account: " + insertError.message,
           variant: "destructive",
         });
         return false;
@@ -272,7 +315,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         level: newUser.level,
         badges: newUser.badges,
         avatarUrl: newUser.avatar_url,
-        token: crypto.randomBytes(32).toString('hex'),
+        token: generateSalt(),
         tokenExpiration: Date.now() + TOKEN_EXPIRATION_TIME
       };
       
@@ -287,9 +330,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return true;
     } catch (error) {
       console.error("Registration error:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
       toast({
         title: "Error",
-        description: "An unexpected error occurred.",
+        description: errorMessage,
         variant: "destructive",
       });
       return false;
@@ -307,7 +351,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const updateUser = async (userData: Partial<User>): Promise<boolean> => {
+  const updateUser = async (userData: UserUpdate): Promise<boolean> => {
     if (!user) return false;
 
     try {
@@ -344,9 +388,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         // Verify current password
-        const hashedCurrentPassword = crypto
-          .pbkdf2Sync(userData.currentPassword, currentUserData.salt, 1000, 64, 'sha512')
-          .toString('hex');
+        const hashedCurrentPassword = await hashPassword(userData.currentPassword, currentUserData.salt);
 
         if (hashedCurrentPassword !== currentUserData.password_hash) {
           toast({
@@ -358,10 +400,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         // Create new password hash
-        const newSalt = crypto.randomBytes(16).toString('hex');
-        const newPasswordHash = crypto
-          .pbkdf2Sync(userData.newPassword, newSalt, 1000, 64, 'sha512')
-          .toString('hex');
+        const newSalt = generateSalt();
+        const newPasswordHash = await hashPassword(userData.newPassword, newSalt);
 
         updates.salt = newSalt;
         updates.password_hash = newPasswordHash;
@@ -376,7 +416,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (updateError) {
         toast({
           title: "Update failed",
-          description: "Error updating profile.",
+          description: "Error updating profile: " + updateError.message,
           variant: "destructive",
         });
         return false;
@@ -400,9 +440,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return true;
     } catch (error) {
       console.error("Update user error:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
       toast({
         title: "Error",
-        description: "An unexpected error occurred.",
+        description: errorMessage,
         variant: "destructive",
       });
       return false;
