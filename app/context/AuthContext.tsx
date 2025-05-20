@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import React, {
   createContext,
   useContext,
@@ -90,10 +91,47 @@ function generateSalt(): string {
   return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
 }
 
+// Generate a proper UUID v4
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+
+  // Debug Supabase connection on initialization
+  useEffect(() => {
+    console.log('Supabase config:', {
+      url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+      key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 5) + '...'
+    });
+    
+    const testSupabase = async () => {
+      try {
+        // Just test if we can connect at all
+        const { data, error } = await supabase
+          .from('users')
+          .select('id')
+          .limit(1);
+          
+        console.log('Supabase connection test:', { 
+          success: !error, 
+          data: data ? 'Data received' : 'No data', 
+          error: error?.message || 'None' 
+        });
+      } catch (err) {
+        console.error('Supabase connection error:', err);
+      }
+    };
+    
+    testSupabase();
+  }, []);
 
   // Load user from local storage on page load
   useEffect(() => {
@@ -129,13 +167,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   ): Promise<boolean> => {
     try {
       setIsLoading(true);
+      console.log('Login attempt for username:', username);
 
       // Get the user by username
       const { data: userData, error: userError } = await supabase
         .from('users')
         .select('*')
         .eq('username', username)
-        .single();
+        .maybeSingle();
+
+      console.log('User lookup result:', { 
+        found: !!userData, 
+        error: userError?.message || 'None'
+      });
 
       if (userError || !userData) {
         toast({
@@ -148,6 +192,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       // Verify password
       const hashedPassword = await hashPassword(password, userData.salt);
+      console.log('Password verification:', { 
+        matches: hashedPassword === userData.password_hash,
+      });
 
       if (hashedPassword !== userData.password_hash) {
         toast({
@@ -164,13 +211,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         username: userData.username,
         displayName: userData.display_name,
         email: userData.email,
-        points: userData.points,
-        level: userData.level,
-        badges: userData.badges,
-        avatarUrl: userData.avatar_url,
+        points: userData.points || 0,
+        level: userData.level || 1,
+        badges: userData.badges || ["newcomer"],
+        avatarUrl: userData.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${username}`,
         token: generateSalt(), // Simple token
         tokenExpiration: Date.now() + TOKEN_EXPIRATION_TIME
       };
+      
+      console.log('Login successful for user:', userData.username);
       
       setUser(formattedUser);
       localStorage.setItem("user", JSON.stringify(formattedUser));
@@ -238,15 +287,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   ): Promise<boolean> => {
     try {
       setIsLoading(true);
+      console.log('Starting registration process for:', username);
 
-      // Check if username exists
-      const { data: existingUsername } = await supabase
+      // Check if username exists (using different approach)
+      const { count: usernameCount, error: usernameCountError } = await supabase
         .from('users')
-        .select('id')
-        .eq('username', username)
-        .single();
+        .select('*', { count: 'exact', head: true })
+        .eq('username', username);
 
-      if (existingUsername) {
+      console.log('Username check result:', { 
+        count: usernameCount, 
+        error: usernameCountError?.message || 'None' 
+      });
+
+      if (usernameCountError) {
+        console.error("Error checking username:", usernameCountError);
+        toast({
+          title: "Registration failed",
+          description: `Error checking username: ${usernameCountError.message}`,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      if (usernameCount && usernameCount > 0) {
         toast({
           title: "Registration failed",
           description: "Username already exists.",
@@ -255,14 +319,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      // Check if email exists
-      const { data: existingEmail } = await supabase
+      // Check if email exists (using count approach)
+      const { count: emailCount, error: emailCountError } = await supabase
         .from('users')
-        .select('id')
-        .eq('email', email)
-        .single();
+        .select('*', { count: 'exact', head: true })
+        .eq('email', email);
 
-      if (existingEmail) {
+      console.log('Email check result:', { 
+        count: emailCount, 
+        error: emailCountError?.message || 'None' 
+      });
+
+      if (emailCountError) {
+        console.error("Error checking email:", emailCountError);
+        toast({
+          title: "Registration failed",
+          description: `Error checking email: ${emailCountError.message}`,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      if (emailCount && emailCount > 0) {
         toast({
           title: "Registration failed",
           description: "Email already exists.",
@@ -275,7 +353,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const salt = generateSalt();
       const passwordHash = await hashPassword(password, salt);
 
-      const userId = `user_${Date.now()}`;
+      // Create user with UUID format ID
+      const userId = generateUUID();
       const newUser = {
         id: userId,
         username,
@@ -290,6 +369,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${username}`, // Generated avatar
       };
 
+      console.log('Attempting to insert user with UUID:', { 
+        id: userId,
+        username,
+        email,
+        display_name: displayName || username,
+        // Don't log sensitive info
+      });
+
       // Insert user into database
       const { error: insertError } = await supabase
         .from('users')
@@ -299,11 +386,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.error("Error inserting user:", insertError);
         toast({
           title: "Registration failed",
-          description: "Error creating user account: " + insertError.message,
+          description: `Database error: ${insertError.message}`,
           variant: "destructive",
         });
         return false;
       }
+
+      console.log('User registration successful');
 
       // Format the user object for the frontend
       const formattedUser: User = {
