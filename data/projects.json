@@ -186,5 +186,40 @@
       "Rich Text Format": 10415,
       "Shell": 1417
     }
+  },
+  {
+    "name": "Deep-Live-Cam",
+    "description": "real time face swap and one-click video deepfake with only a single image",
+    "stars": "68.2k",
+    "forks": "9.6k",
+    "tags": [
+      "ai",
+      "faceswap",
+      "webcam"
+    ],
+    "url": "https://github.com/hacksider/Deep-Live-Cam",
+    "languages": {
+      "Python": 106182,
+      "Batchfile": 79
+    }
+  },
+    {
+    "name": "onlook",
+    "description": "The Open-Source Visual Vibecoding Editor – Visually build, style, and edit your React App with AI",
+    "stars": "9.5k",
+    "forks": "591",
+    "tags": [
+      "design",
+      "react",
+      "no-code"
+    ],
+    "url": "https://github.com/onlook-dev/onlook",
+    "languages": {
+  "TypeScript": 2775132,
+  "CSS": 23019,
+  "JavaScript": 2010,
+  "Shell": 1241,
+  "Dockerfile": 630
+}
   }
 ]
