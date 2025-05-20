@@ -1,10 +1,11 @@
-"use client";
+"use client"
 
 import React, {
   createContext,
   useContext,
   useState,
   useEffect,
+  useCallback,
   ReactNode,
 } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -453,59 +454,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const updates: Record<string, any> = {};
 
-      // Map user data to database column names
-      if (userData.displayName) updates.display_name = userData.displayName;
+      // Map user data to API request format
+      if (userData.username) updates.username = userData.username;
+      if (userData.displayName) updates.displayName = userData.displayName;
       if (userData.email) updates.email = userData.email;
-      if (userData.avatarUrl) updates.avatar_url = userData.avatarUrl;
+      if (userData.avatarUrl) updates.avatarUrl = userData.avatarUrl;
 
       // Handle password update separately if provided
       if (userData.currentPassword && userData.newPassword) {
-        // Get current user data for password verification
-        const { data: currentUserData, error: userError } = await supabase
-          .from('users')
-          .select('salt, password_hash')
-          .eq('id', user.id)
-          .single();
-
-        if (userError || !currentUserData) {
-          toast({
-            title: "Update failed",
-            description: "Error verifying current password.",
-            variant: "destructive",
-          });
-          return false;
-        }
-
-        // Verify current password
-        const hashedCurrentPassword = await hashPassword(userData.currentPassword, currentUserData.salt);
-
-        if (hashedCurrentPassword !== currentUserData.password_hash) {
-          toast({
-            title: "Update failed",
-            description: "Current password is incorrect.",
-            variant: "destructive",
-          });
-          return false;
-        }
-
-        // Create new password hash
-        const newSalt = generateSalt();
-        const newPasswordHash = await hashPassword(userData.newPassword, newSalt);
-
-        updates.salt = newSalt;
-        updates.password_hash = newPasswordHash;
+        updates.currentPassword = userData.currentPassword;
+        updates.newPassword = userData.newPassword;
       }
+      
+      console.log('Sending user update request:', { 
+        id: user.id,
+        fields: Object.keys(updates) 
+      });
 
-      // Update user in database
-      const { error: updateError } = await supabase
-        .from('users')
-        .update(updates)
-        .eq('id', user.id);
+      // Send update request to API
+      const response = await fetch('/api/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          id: user.id,
+          ...updates
+        })
+      });
 
-      if (updateError) {
+      const updatedData = await response.json();
+
+      if (!response.ok) {
+        console.error('User update error:', updatedData.error);
         toast({
           title: "Update failed",
-          description: "Error updating profile: " + updateError.message,
+          description: updatedData.error || "Error updating profile",
           variant: "destructive",
         });
         return false;
@@ -514,7 +496,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Update the local user state with new values
       const updatedUser = {
         ...user,
-        ...userData,
+        username: updatedData.username || user.username,
+        displayName: updatedData.display_name || user.displayName,
+        email: updatedData.email || user.email,
+        avatarUrl: updatedData.avatar_url || user.avatarUrl,
+        points: updatedData.points || user.points,
+        level: updatedData.level || user.level,
+        badges: updatedData.badges || user.badges,
         tokenExpiration: user.tokenExpiration // Preserve token expiration
       };
 

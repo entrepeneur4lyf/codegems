@@ -52,7 +52,14 @@ export async function GET(request: Request) {
         .eq('id', userId)
         .single();
 
-      if (error || !user) {
+      if (error) {
+        console.error("Error getting user by ID:", error);
+        return NextResponse.json({ 
+          error: `User not found: ${error.message}` 
+        }, { status: 404 });
+      }
+
+      if (!user) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
 
@@ -68,7 +75,14 @@ export async function GET(request: Request) {
         .ilike('username', username)
         .single();
 
-      if (error || !user) {
+      if (error) {
+        console.error("Error getting user by username:", error);
+        return NextResponse.json({ 
+          error: `User not found: ${error.message}` 
+        }, { status: 404 });
+      }
+
+      if (!user) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
 
@@ -85,10 +99,13 @@ export async function GET(request: Request) {
         .limit(10);
 
       if (error) {
-        return NextResponse.json({ error: "Failed to get leaderboard" }, { status: 500 });
+        console.error("Error getting leaderboard:", error);
+        return NextResponse.json({ 
+          error: `Failed to get leaderboard: ${error.message}` 
+        }, { status: 500 });
       }
 
-      return NextResponse.json(users);
+      return NextResponse.json(users || []);
     }
 
     // Return all users without sensitive data
@@ -97,13 +114,19 @@ export async function GET(request: Request) {
       .select('id, username, display_name, points, badges, level, created_at, avatar_url');
 
     if (error) {
-      return NextResponse.json({ error: "Failed to get users" }, { status: 500 });
+      console.error("Error getting all users:", error);
+      return NextResponse.json({ 
+        error: `Failed to get users: ${error.message}` 
+      }, { status: 500 });
     }
 
-    return NextResponse.json(users);
+    return NextResponse.json(users || []);
   } catch (error) {
-    console.error("Error getting users:", error);
-    return NextResponse.json({ error: "Failed to get users" }, { status: 500 });
+    console.error("Error in GET users route:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ 
+      error: `Failed to get users: ${errorMessage}` 
+    }, { status: 500 });
   }
 }
 
@@ -112,6 +135,8 @@ export async function createUser(request: Request) {
   try {
     const body = await request.json();
     const { username, password, email, displayName } = body;
+
+    console.log(`Registration attempt for username: ${username}, email: ${email}`);
 
     if (!validatePassword(password)) {
       return NextResponse.json(
@@ -128,11 +153,19 @@ export async function createUser(request: Request) {
     }
 
     // Check if username already exists
-    const { data: existingUsername } = await supabase
+    const { data: existingUsername, error: usernameError } = await supabase
       .from('users')
       .select('id')
       .eq('username', username)
-      .single();
+      .maybeSingle();
+
+    if (usernameError) {
+      console.error("Error checking username:", usernameError);
+      return NextResponse.json(
+        { error: `Failed to check username: ${usernameError.message}` },
+        { status: 500 }
+      );
+    }
 
     if (existingUsername) {
       return NextResponse.json(
@@ -142,11 +175,19 @@ export async function createUser(request: Request) {
     }
 
     // Check if email already exists
-    const { data: existingEmail } = await supabase
+    const { data: existingEmail, error: emailError } = await supabase
       .from('users')
       .select('id')
       .eq('email', email)
-      .single();
+      .maybeSingle();
+
+    if (emailError) {
+      console.error("Error checking email:", emailError);
+      return NextResponse.json(
+        { error: `Failed to check email: ${emailError.message}` },
+        { status: 500 }
+      );
+    }
 
     if (existingEmail) {
       return NextResponse.json(
@@ -175,22 +216,27 @@ export async function createUser(request: Request) {
       avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${username}`, // Generated avatar
     };
 
-    const { error } = await supabase.from('users').insert(newUser);
+    console.log(`Creating new user with ID: ${newUser.id}`);
 
-    if (error) {
+    const { error: insertError } = await supabase.from('users').insert(newUser);
+
+    if (insertError) {
+      console.error("Error creating user:", insertError);
       return NextResponse.json(
-        { error: "Failed to create user" },
+        { error: `Failed to create user: ${insertError.message}` },
         { status: 500 }
       );
     }
 
     // Return user without sensitive data
     const { password_hash: _, salt: __, ...userData } = newUser;
+    console.log("User created successfully");
     return NextResponse.json(userData);
   } catch (error) {
-    console.error("Error creating user:", error);
+    console.error("Error in createUser route:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to create user" },
+      { error: `Failed to create user: ${errorMessage}` },
       { status: 500 }
     );
   }
@@ -201,6 +247,8 @@ export async function loginUser(request: Request) {
   try {
     const body = await request.json();
     const { username, password } = body;
+
+    console.log(`Login attempt for username: ${username}`);
 
     if (!username || !password) {
       return NextResponse.json(
@@ -215,7 +263,15 @@ export async function loginUser(request: Request) {
       .eq('username', username)
       .single();
 
-    if (error || !user) {
+    if (error) {
+      console.error("Error finding user:", error);
+      return NextResponse.json(
+        { error: "Invalid credentials" },
+        { status: 401 }
+      );
+    }
+
+    if (!user) {
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 }
@@ -233,6 +289,8 @@ export async function loginUser(request: Request) {
       );
     }
 
+    console.log("Login successful");
+
     // Successful login, return user without sensitive data
     const { password_hash, salt, ...userData } = user;
     return NextResponse.json({
@@ -240,8 +298,11 @@ export async function loginUser(request: Request) {
       token: crypto.randomBytes(32).toString("hex"), // Simple session token
     });
   } catch (error) {
-    console.error("Error during login:", error);
-    return NextResponse.json({ error: "Login failed" }, { status: 500 });
+    console.error("Error in login route:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ 
+      error: `Login failed: ${errorMessage}` 
+    }, { status: 500 });
   }
 }
 
@@ -249,8 +310,10 @@ export async function loginUser(request: Request) {
 export async function updateUser(request: Request) {
   try {
     const body = await request.json();
-    const { id, displayName, avatarUrl, email, currentPassword, newPassword } = body;
+    const { id, username, displayName, avatarUrl, email, currentPassword, newPassword } = body;
 
+    console.log(`Update request for user ID: ${id}`);
+    
     if (!id) {
       return NextResponse.json(
         { error: "User ID is required" },
@@ -264,12 +327,48 @@ export async function updateUser(request: Request) {
       .eq('id', id)
       .single();
 
-    if (getUserError || !user) {
+    if (getUserError) {
+      console.error("Error getting user for update:", getUserError);
+      return NextResponse.json({ 
+        error: `User not found: ${getUserError.message}` 
+      }, { status: 404 });
+    }
+
+    if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Prepare update object
     const updates: Record<string, any> = {};
+
+    // Update username if provided and different
+    if (username && username !== user.username) {
+      // Check if username is already taken by another user
+      const { data: existingUser, error: checkUsernameError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('username', username)
+        .neq('id', id)
+        .maybeSingle();
+
+      if (checkUsernameError) {
+        console.error("Error checking username availability:", checkUsernameError);
+        return NextResponse.json(
+          { error: `Failed to check username: ${checkUsernameError.message}` },
+          { status: 500 }
+        );
+      }
+
+      if (existingUser) {
+        return NextResponse.json(
+          { error: "Username is already taken" },
+          { status: 400 }
+        );
+      }
+
+      console.log(`Updating username from ${user.username} to ${username}`);
+      updates.username = username;
+    }
 
     // Update modifiable fields
     if (displayName) updates.display_name = displayName;
@@ -277,12 +376,20 @@ export async function updateUser(request: Request) {
 
     // If email is being changed, check if it already exists
     if (email && email !== user.email) {
-      const { data: existingEmail } = await supabase
+      const { data: existingEmail, error: emailError } = await supabase
         .from('users')
         .select('id')
         .eq('email', email)
         .neq('id', id)
-        .single();
+        .maybeSingle();
+
+      if (emailError) {
+        console.error("Error checking email:", emailError);
+        return NextResponse.json(
+          { error: `Failed to check email: ${emailError.message}` },
+          { status: 500 }
+        );
+      }
 
       if (existingEmail) {
         return NextResponse.json(
@@ -316,6 +423,14 @@ export async function updateUser(request: Request) {
       updates.salt = newSalt;
     }
 
+    // Only proceed with update if there are changes
+    if (Object.keys(updates).length === 0) {
+      const { password_hash, salt, ...userData } = user;
+      return NextResponse.json(userData);
+    }
+
+    console.log(`Updating user with changes: ${Object.keys(updates).join(', ')}`);
+
     // Update user
     const { error: updateError } = await supabase
       .from('users')
@@ -323,8 +438,9 @@ export async function updateUser(request: Request) {
       .eq('id', id);
 
     if (updateError) {
+      console.error("Error updating user:", updateError);
       return NextResponse.json(
-        { error: "Failed to update user" },
+        { error: `Failed to update user: ${updateError.message}` },
         { status: 500 }
       );
     }
@@ -336,20 +452,24 @@ export async function updateUser(request: Request) {
       .eq('id', id)
       .single();
 
-    if (getUpdatedError || !updatedUser) {
+    if (getUpdatedError) {
+      console.error("Error getting updated user:", getUpdatedError);
       return NextResponse.json(
-        { error: "Failed to retrieve updated user" },
+        { error: `Failed to retrieve updated user: ${getUpdatedError.message}` },
         { status: 500 }
       );
     }
+
+    console.log("User updated successfully");
 
     // Return updated user without sensitive data
     const { password_hash, salt, ...userData } = updatedUser;
     return NextResponse.json(userData);
   } catch (error) {
-    console.error("Error updating user:", error);
+    console.error("Error in updateUser route:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to update user" },
+      { error: `Failed to update user: ${errorMessage}` },
       { status: 500 }
     );
   }
@@ -360,6 +480,8 @@ export async function checkBadges(request: Request) {
   try {
     const body = await request.json();
     const { userId } = body;
+
+    console.log(`Checking badges for user: ${userId}`);
 
     if (!userId) {
       return NextResponse.json(
@@ -374,7 +496,14 @@ export async function checkBadges(request: Request) {
       .eq('id', userId)
       .single();
 
-    if (userError || !user) {
+    if (userError) {
+      console.error("Error getting user for badges:", userError);
+      return NextResponse.json({ 
+        error: `User not found: ${userError.message}` 
+      }, { status: 404 });
+    }
+
+    if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
@@ -383,14 +512,27 @@ export async function checkBadges(request: Request) {
       .select('*');
 
     if (badgesError) {
+      console.error("Error fetching badges:", badgesError);
       return NextResponse.json(
-        { error: "Failed to fetch badges" },
+        { error: `Failed to fetch badges: ${badgesError.message}` },
         { status: 500 }
       );
     }
 
+    if (!badges || badges.length === 0) {
+      console.log("No badges found in the database");
+      return NextResponse.json({
+        earnedBadges: [],
+        levelUp: false,
+        currentLevel: user.level,
+        currentPoints: user.points,
+      });
+    }
+
     const earnedBadges: Badge[] = [];
-    let userBadges = [...user.badges];
+    let userBadges = [...(user.badges || [])];
+    console.log(`Current badges: ${userBadges.join(', ')}`);
+    let pointsEarned = 0;
 
     // Check ratings count
     const { data: ratings, error: ratingsError } = await supabase
@@ -400,22 +542,27 @@ export async function checkBadges(request: Request) {
 
     if (!ratingsError) {
       const ratingsCount = ratings?.length || 0;
+      console.log(`User has ${ratingsCount} ratings`);
 
       // First rating badge
       const firstRatingBadge = badges.find(b => b.id === "first_rating");
       if (ratingsCount > 0 && !userBadges.includes("first_rating") && firstRatingBadge) {
+        console.log("Awarding first_rating badge");
         earnedBadges.push(firstRatingBadge);
         userBadges.push("first_rating");
-        user.points += firstRatingBadge.points;
+        pointsEarned += firstRatingBadge.points;
       }
 
       // 10 ratings badge
       const rating10Badge = badges.find(b => b.id === "rating_10");
       if (ratingsCount >= 10 && !userBadges.includes("rating_10") && rating10Badge) {
+        console.log("Awarding rating_10 badge");
         earnedBadges.push(rating10Badge);
         userBadges.push("rating_10");
-        user.points += rating10Badge.points;
+        pointsEarned += rating10Badge.points;
       }
+    } else {
+      console.error("Error checking ratings:", ratingsError);
     }
 
     // Check comments count
@@ -426,60 +573,72 @@ export async function checkBadges(request: Request) {
 
     if (!commentsError) {
       const commentsCount = comments?.length || 0;
+      console.log(`User has ${commentsCount} comments`);
 
       // First comment badge
       const firstCommentBadge = badges.find(b => b.id === "first_comment");
       if (commentsCount > 0 && !userBadges.includes("first_comment") && firstCommentBadge) {
+        console.log("Awarding first_comment badge");
         earnedBadges.push(firstCommentBadge);
         userBadges.push("first_comment");
-        user.points += firstCommentBadge.points;
+        pointsEarned += firstCommentBadge.points;
       }
 
       // 10 comments badge
       const comment10Badge = badges.find(b => b.id === "comment_10");
       if (commentsCount >= 10 && !userBadges.includes("comment_10") && comment10Badge) {
+        console.log("Awarding comment_10 badge");
         earnedBadges.push(comment10Badge);
         userBadges.push("comment_10");
-        user.points += comment10Badge.points;
+        pointsEarned += comment10Badge.points;
       }
+    } else {
+      console.error("Error checking comments:", commentsError);
     }
 
     // Calculate level based on points
-    const newLevel = Math.floor(user.points / 100) + 1;
+    const totalPoints = user.points + pointsEarned;
+    const newLevel = Math.floor(totalPoints / 100) + 1;
     const levelUp = newLevel > user.level;
+    console.log(`Points: ${totalPoints}, New level: ${newLevel}, Level up: ${levelUp}`);
     
     // Check for level badges
     if (newLevel >= 5 && !userBadges.includes("level_5")) {
       const level5Badge = badges.find(b => b.id === "level_5");
       if (level5Badge) {
+        console.log("Awarding level_5 badge");
         earnedBadges.push(level5Badge);
         userBadges.push("level_5");
-        user.points += level5Badge.points;
+        pointsEarned += level5Badge.points;
       }
     }
 
     if (newLevel >= 10 && !userBadges.includes("level_10")) {
       const level10Badge = badges.find(b => b.id === "level_10");
       if (level10Badge) {
+        console.log("Awarding level_10 badge");
         earnedBadges.push(level10Badge);
         userBadges.push("level_10");
-        user.points += level10Badge.points;
+        pointsEarned += level10Badge.points;
       }
     }
 
     // Update user if badges or points changed
     if (earnedBadges.length > 0 || levelUp) {
+      console.log(`Updating user with ${earnedBadges.length} new badges, ${pointsEarned} points, level ${newLevel}`);
+      
       const { error: updateError } = await supabase
         .from('users')
         .update({
           badges: userBadges,
-          points: user.points,
+          points: totalPoints,
           level: newLevel,
         })
         .eq('id', userId);
 
       if (updateError) {
         console.error("Error updating user badges:", updateError);
+        // Continue execution - we should still return what badges were earned even if updating failed
       }
     }
 
@@ -487,12 +646,13 @@ export async function checkBadges(request: Request) {
       earnedBadges,
       levelUp,
       currentLevel: newLevel,
-      currentPoints: user.points,
+      currentPoints: totalPoints,
     });
   } catch (error) {
     console.error("Error checking badges:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to check badges" },
+      { error: `Failed to check badges: ${errorMessage}` },
       { status: 500 }
     );
   }

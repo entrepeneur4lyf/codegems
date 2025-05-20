@@ -44,12 +44,23 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { projectName, userId, rating, review } = body;
 
-    if (!projectName || !userId || !rating) {
+    // Validation
+    if (!projectName || !userId || rating === undefined || rating === null) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Missing required fields: projectName, userId, and rating are required" },
         { status: 400 }
       );
     }
+
+    // Validate rating value
+    if (typeof rating !== 'number' || rating < 1 || rating > 5) {
+      return NextResponse.json(
+        { error: "Rating must be a number between 1 and 5" },
+        { status: 400 }
+      );
+    }
+
+    console.log(`Attempting to save rating: Project=${projectName}, User=${userId}, Rating=${rating}`);
 
     // Check if rating already exists
     const { data: existingRating, error: findError } = await supabase
@@ -57,11 +68,21 @@ export async function POST(request: Request) {
       .select('*')
       .eq('project_name', projectName)
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
+
+    if (findError) {
+      console.error("Error finding existing rating:", findError);
+      return NextResponse.json(
+        { error: "Failed to check for existing rating" },
+        { status: 500 }
+      );
+    }
 
     const now = new Date().toISOString();
 
     if (existingRating) {
+      console.log(`Updating existing rating with ID: ${existingRating.id}`);
+      
       // Update existing rating
       const { error: updateError } = await supabase
         .from('ratings')
@@ -73,12 +94,18 @@ export async function POST(request: Request) {
         .eq('id', existingRating.id);
 
       if (updateError) {
+        console.error("Error updating rating:", updateError);
         return NextResponse.json(
-          { error: "Failed to update rating" },
+          { error: `Failed to update rating: ${updateError.message}` },
           { status: 500 }
         );
       }
+      
+      console.log("Rating updated successfully");
+      return NextResponse.json({ success: true, message: "Rating updated successfully" });
     } else {
+      console.log("Creating new rating");
+      
       // Create new rating
       const newRating = {
         id: `rating_${Date.now()}`,
@@ -95,34 +122,55 @@ export async function POST(request: Request) {
         .insert(newRating);
 
       if (insertError) {
+        console.error("Error creating rating:", insertError);
         return NextResponse.json(
-          { error: "Failed to save rating" },
+          { error: `Failed to save rating: ${insertError.message}` },
           { status: 500 }
         );
       }
 
+      console.log("New rating created successfully");
+
       // Award points for new rating
-      const { data: userData, error: getUserError } = await supabase
-        .from('users')
-        .select('points')
-        .eq('id', userId)
-        .single();
-
-      if (!getUserError && userData) {
-        await supabase
+      try {
+        const { data: userData, error: getUserError } = await supabase
           .from('users')
-          .update({
-            points: (userData.points || 0) + 5
-          })
-          .eq('id', userId);
-      }
-    }
+          .select('points')
+          .eq('id', userId)
+          .single();
 
-    return NextResponse.json({ success: true });
+        if (getUserError) {
+          console.error("Error getting user data for points:", getUserError);
+        } else if (userData) {
+          const { error: updatePointsError } = await supabase
+            .from('users')
+            .update({
+              points: (userData.points || 0) + 5
+            })
+            .eq('id', userId);
+            
+          if (updatePointsError) {
+            console.error("Error updating user points:", updatePointsError);
+          } else {
+            console.log("User points updated successfully");
+          }
+        }
+      } catch (error) {
+        console.error("Error awarding points:", error);
+        // Continue execution - points award failure shouldn't stop the rating submission
+      }
+
+      return NextResponse.json({ 
+        success: true, 
+        message: "Rating saved successfully",
+        rating: newRating
+      });
+    }
   } catch (error) {
     console.error("Error saving rating:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to save rating" },
+      { error: `Failed to save rating: ${errorMessage}` },
       { status: 500 }
     );
   }
@@ -147,17 +195,19 @@ export async function DELETE(request: Request) {
       .eq('id', ratingId);
 
     if (error) {
+      console.error("Error deleting rating:", error);
       return NextResponse.json(
-        { error: "Failed to delete rating" },
+        { error: `Failed to delete rating: ${error.message}` },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, message: "Rating deleted successfully" });
   } catch (error) {
     console.error("Error deleting rating:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to delete rating" },
+      { error: `Failed to delete rating: ${errorMessage}` },
       { status: 500 }
     );
   }

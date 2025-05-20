@@ -1,23 +1,21 @@
-"use client";
-
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn, UserPlus, Mail, Lock, User, Gift, AlertCircle, Check } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Check, AlertCircle } from "lucide-react";
 
 interface FormData {
+  username: string;
   displayName: string;
   currentPassword: string;
   newPassword: string;
@@ -28,6 +26,7 @@ interface FormData {
 const ProfileForm = () => {
   const { user, updateUser, isLoading } = useAuth();
   const [formData, setFormData] = useState<FormData>({
+    username: user?.username || "",
     displayName: user?.displayName || "",
     currentPassword: "",
     newPassword: "",
@@ -37,6 +36,18 @@ const ProfileForm = () => {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Update form data when user changes
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        username: user.username,
+        displayName: user.displayName,
+        email: user.email || "",
+      }));
+    }
+  }, [user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -53,6 +64,13 @@ const ProfileForm = () => {
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
+    
+    // Validate username
+    if (!formData.username.trim()) {
+      errors.username = "Username is required";
+    } else if (formData.username.length < 3) {
+      errors.username = "Username must be at least 3 characters";
+    }
     
     // Validate display name
     if (!formData.displayName.trim()) {
@@ -93,9 +111,10 @@ const ProfileForm = () => {
     if (!validateForm()) return;
     
     // Prepare update data
-    const updateData = {
+    const updateData: any = {
+      username: formData.username,
       displayName: formData.displayName,
-      ...(formData.email && { email: formData.email }),
+      email: formData.email,
     };
     
     // Add password data if changing password
@@ -147,6 +166,23 @@ const ProfileForm = () => {
         </Alert>
       )}
     
+      <div className="space-y-2">
+        <Label htmlFor="username" className="text-white">
+          Username
+        </Label>
+        <Input
+          id="username"
+          name="username"
+          value={formData.username}
+          onChange={handleInputChange}
+          placeholder="Your username"
+          className="bg-slate-700 border-slate-600 text-white"
+        />
+        {formErrors.username && (
+          <p className="text-red-400 text-sm">{formErrors.username}</p>
+        )}
+      </div>
+      
       <div className="space-y-2">
         <Label htmlFor="displayName" className="text-white">
           Display Name

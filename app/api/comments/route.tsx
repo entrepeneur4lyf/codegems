@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     if (error) {
       console.error("Error getting comments:", error);
       return NextResponse.json(
-        { error: "Failed to get comments. Please try again." },
+        { error: `Failed to get comments: ${error.message}` },
         { status: 500 }
       );
     }
@@ -31,8 +31,9 @@ export async function GET(request: Request) {
     return NextResponse.json(comments || []);
   } catch (error) {
     console.error("Error getting comments:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to get comments. Please try again." },
+      { error: `Failed to get comments: ${errorMessage}` },
       { status: 500 }
     );
   }
@@ -43,6 +44,8 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { projectName, userId, text, parentId } = body;
+
+    console.log("Comment submission:", { projectName, userId, textLength: text?.length, parentId });
 
     // Validation
     if (!projectName || !projectName.trim()) {
@@ -73,7 +76,15 @@ export async function POST(request: Request) {
       .eq('id', userId)
       .single();
 
-    if (userError || !user) {
+    if (userError) {
+      console.error("Error checking user:", userError);
+      return NextResponse.json(
+        { error: `User check failed: ${userError.message}` },
+        { status: 500 }
+      );
+    }
+
+    if (!user) {
       return NextResponse.json(
         { error: "User not found" },
         { status: 404 }
@@ -88,7 +99,15 @@ export async function POST(request: Request) {
         .eq('id', parentId)
         .single();
 
-      if (parentError || !parentComment) {
+      if (parentError && parentError.code !== 'PGRST116') {
+        console.error("Error checking parent comment:", parentError);
+        return NextResponse.json(
+          { error: `Parent comment check failed: ${parentError.message}` },
+          { status: 500 }
+        );
+      }
+
+      if (!parentComment) {
         return NextResponse.json(
           { error: "Parent comment not found" },
           { status: 404 }
@@ -96,8 +115,11 @@ export async function POST(request: Request) {
       }
     }
 
+    const commentId = `comment_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    console.log(`Creating comment with ID: ${commentId}`);
+
     const newComment = {
-      id: `comment_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+      id: commentId,
       project_name: projectName,
       user_id: userId,
       text: text.trim(),
@@ -111,33 +133,50 @@ export async function POST(request: Request) {
       .insert(newComment);
 
     if (insertError) {
+      console.error("Error inserting comment:", insertError);
       return NextResponse.json(
-        { error: "Failed to create comment" },
+        { error: `Failed to create comment: ${insertError.message}` },
         { status: 500 }
       );
     }
 
-    // Award points for new comment
-    const { data: userData, error: getUserError } = await supabase
-      .from('users')
-      .select('points, badges')
-      .eq('id', userId)
-      .single();
+    console.log("Comment created successfully");
 
-    if (!getUserError && userData) {
-      await supabase
+    // Award points for new comment
+    try {
+      const { data: userData, error: getUserError } = await supabase
         .from('users')
-        .update({
-          points: (userData.points || 0) + 2
-        })
-        .eq('id', userId);
+        .select('points, badges')
+        .eq('id', userId)
+        .single();
+
+      if (getUserError) {
+        console.error("Error getting user data for points:", getUserError);
+      } else if (userData) {
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({
+            points: (userData.points || 0) + 2
+          })
+          .eq('id', userId);
+          
+        if (updateError) {
+          console.error("Error updating user points:", updateError);
+        } else {
+          console.log("User points updated successfully");
+        }
+      }
+    } catch (pointsError) {
+      console.error("Error awarding points:", pointsError);
+      // Continue execution - points award failure shouldn't stop comment submission
     }
 
     return NextResponse.json(newComment);
   } catch (error) {
     console.error("Error creating comment:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to create comment. Please try again." },
+      { error: `Failed to create comment: ${errorMessage}` },
       { status: 500 }
     );
   }
@@ -148,6 +187,8 @@ export async function PUT(request: Request) {
   try {
     const body = await request.json();
     const { commentId, userId, action, text } = body;
+
+    console.log("Comment update:", { commentId, userId, action, textLength: text?.length });
 
     // Validation
     if (!commentId || !commentId.trim()) {
@@ -185,7 +226,15 @@ export async function PUT(request: Request) {
       .eq('id', commentId)
       .single();
 
-    if (getCommentError || !comment) {
+    if (getCommentError) {
+      console.error("Error getting comment:", getCommentError);
+      return NextResponse.json(
+        { error: `Failed to get comment: ${getCommentError.message}` },
+        { status: 500 }
+      );
+    }
+
+    if (!comment) {
       return NextResponse.json(
         { error: "Comment not found" },
         { status: 404 }
@@ -227,17 +276,20 @@ export async function PUT(request: Request) {
       .single();
 
     if (updateError) {
+      console.error("Error updating comment:", updateError);
       return NextResponse.json(
-        { error: "Failed to update comment" },
+        { error: `Failed to update comment: ${updateError.message}` },
         { status: 500 }
       );
     }
 
+    console.log("Comment updated successfully");
     return NextResponse.json(updatedComment);
   } catch (error) {
     console.error("Error updating comment:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to update comment. Please try again." },
+      { error: `Failed to update comment: ${errorMessage}` },
       { status: 500 }
     );
   }
@@ -257,6 +309,8 @@ export async function DELETE(request: Request) {
   }
 
   try {
+    console.log(`Attempting to delete comment: ${commentId} by user: ${userId}`);
+    
     // Check if comment exists and if user is the author
     const { data: comment, error: getCommentError } = await supabase
       .from('comments')
@@ -264,7 +318,15 @@ export async function DELETE(request: Request) {
       .eq('id', commentId)
       .single();
 
-    if (getCommentError || !comment) {
+    if (getCommentError) {
+      console.error("Error checking comment:", getCommentError);
+      return NextResponse.json(
+        { error: `Failed to check comment: ${getCommentError.message}` },
+        { status: 500 }
+      );
+    }
+
+    if (!comment) {
       return NextResponse.json(
         { error: "Comment not found" },
         { status: 404 }
@@ -285,23 +347,31 @@ export async function DELETE(request: Request) {
       .eq('id', commentId);
 
     if (deleteError) {
+      console.error("Error deleting comment:", deleteError);
       return NextResponse.json(
-        { error: "Failed to delete comment" },
+        { error: `Failed to delete comment: ${deleteError.message}` },
         { status: 500 }
       );
     }
 
     // Delete all replies to this comment
-    await supabase
-      .from('comments')
-      .delete()
-      .eq('parent_id', commentId);
+    try {
+      await supabase
+        .from('comments')
+        .delete()
+        .eq('parent_id', commentId);
+    } catch (replyError) {
+      console.error("Error deleting replies:", replyError);
+      // Continue execution - we've already deleted the main comment
+    }
 
-    return NextResponse.json({ success: true });
+    console.log("Comment deleted successfully");
+    return NextResponse.json({ success: true, message: "Comment deleted successfully" });
   } catch (error) {
     console.error("Error deleting comment:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to delete comment. Please try again." },
+      { error: `Failed to delete comment: ${errorMessage}` },
       { status: 500 }
     );
   }
