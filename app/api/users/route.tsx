@@ -1,9 +1,21 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 import crypto from "crypto";
+import supabase from "@/lib/supabase";
 
-// Define interfaces for type safety
+interface User {
+  id: string;
+  username: string;
+  email: string;
+  display_name: string;
+  password_hash: string;
+  salt: string;
+  points: number;
+  level: number;
+  badges: string[];
+  created_at: string;
+  avatar_url: string;
+}
+
 interface Badge {
   id: string;
   name: string;
@@ -12,121 +24,17 @@ interface Badge {
   points: number;
 }
 
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  displayName: string;
-  passwordHash: string;
-  salt: string;
-  points: number;
-  level: number;
-  badges: string[];
-  createdAt: string;
-  avatarUrl: string;
+interface BadgeResponse {
+  earnedBadges: Badge[];
+  levelUp: boolean;
+  currentLevel: number;
+  currentPoints: number;
 }
-
-interface Rating {
-  userId: string;
-  // Add other rating-related fields
-}
-
-interface Comment {
-  userId: string;
-  // Add other comment-related fields
-}
-
-const usersFilePath = path.join(process.cwd(), "data", "users.json");
-const badgesFilePath = path.join(process.cwd(), "data", "badges.json");
 
 const validatePassword = (password: string): boolean => {
   // At least 8 characters, one uppercase, one lowercase, one number
-  const passwordRegex = /^(?=.*[a.z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
   return passwordRegex.test(password);
-};
-
-// Utility functions with explicit typing
-const getUsers = (): User[] => {
-  if (!fs.existsSync(usersFilePath)) {
-    // Ensure directory exists
-    const dir = path.dirname(usersFilePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-
-    // Create an empty array if file doesn't exist
-    fs.writeFileSync(usersFilePath, JSON.stringify([]));
-    return [];
-  }
-
-  const data = fs.readFileSync(usersFilePath, "utf8").trim();
-
-  // Handle empty file or invalid JSON
-  if (!data) {
-    return [];
-  }
-
-  try {
-    return JSON.parse(data);
-  } catch (error) {
-    console.error("Error parsing users file:", error);
-    // Backup the problematic file and start fresh
-    const backupPath = `${usersFilePath}.backup.${Date.now()}`;
-    fs.renameSync(usersFilePath, backupPath);
-    fs.writeFileSync(usersFilePath, JSON.stringify([]));
-    return [];
-  }
-};
-
-const saveUsers = (users: User[]): void => {
-  fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
-};
-
-const getBadges = (): Badge[] => {
-  if (!fs.existsSync(badgesFilePath)) {
-    // Create default badges if file doesn't exist
-    const defaultBadges: Badge[] = [
-      {
-        id: "newcomer",
-        name: "Newcomer",
-        description: "Create an account",
-        icon: "Gift",
-        points: 10,
-      },
-      {
-        id: "first_rating",
-        name: "Critic",
-        description: "Give your first rating",
-        icon: "Star",
-        points: 20,
-      },
-      {
-        id: "first_comment",
-        name: "Commentator",
-        description: "Write your first comment",
-        icon: "MessageSquare",
-        points: 20,
-      },
-      {
-        id: "project_submitter",
-        name: "Explorer",
-        description: "Submit your first project",
-        icon: "Search",
-        points: 50,
-      },
-      {
-        id: "rating_10",
-        name: "Rating Master",
-        description: "Give 10 ratings",
-        icon: "Award",
-        points: 100,
-      },
-    ];
-    fs.writeFileSync(badgesFilePath, JSON.stringify(defaultBadges, null, 2));
-    return defaultBadges;
-  }
-  const data = fs.readFileSync(badgesFilePath, "utf8");
-  return JSON.parse(data);
 };
 
 // GET: Retrieve users
@@ -137,88 +45,69 @@ export async function GET(request: Request) {
   const leaderboard = searchParams.get("leaderboard");
 
   try {
-    const users = getUsers();
-
     if (userId) {
-      const user = users.find((u) => u.id === userId);
-      if (!user) {
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error || !user) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
-      // Security measure: do not return password hash
-      const { passwordHash, salt, ...userData } = user;
+
+      // Don't return sensitive data
+      const { password_hash, salt, ...userData } = user;
       return NextResponse.json(userData);
     }
 
     if (username) {
-      const user = users.find(
-        (u) => u.username.toLowerCase() === username.toLowerCase()
-      );
-      if (!user) {
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('*')
+        .ilike('username', username)
+        .single();
+
+      if (error || !user) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
-      const { passwordHash, salt, ...userData } = user;
+
+      const { password_hash, salt, ...userData } = user;
       return NextResponse.json(userData);
     }
 
     if (leaderboard) {
       // Return leaderboard (Top 10 sorted by points)
-      return NextResponse.json(
-        users
-          .map(
-            ({
-              id,
-              username,
-              displayName,
-              points,
-              badges,
-              level,
-              avatarUrl,
-            }) => ({
-              id,
-              username,
-              displayName,
-              points,
-              badges,
-              level,
-              avatarUrl,
-            })
-          )
-          .sort((a, b) => (b.points || 0) - (a.points || 0))
-          .slice(0, 10)
-      );
+      const { data: users, error } = await supabase
+        .from('users')
+        .select('id, username, display_name, points, badges, level, avatar_url')
+        .order('points', { ascending: false })
+        .limit(10);
+
+      if (error) {
+        return NextResponse.json({ error: "Failed to get leaderboard" }, { status: 500 });
+      }
+
+      return NextResponse.json(users);
     }
 
     // Return all users without sensitive data
-    return NextResponse.json(
-      users.map(
-        ({
-          id,
-          username,
-          displayName,
-          points,
-          badges,
-          level,
-          createdAt,
-          avatarUrl,
-        }) => ({
-          id,
-          username,
-          displayName,
-          points,
-          badges,
-          level,
-          createdAt,
-          avatarUrl,
-        })
-      )
-    );
+    const { data: users, error } = await supabase
+      .from('users')
+      .select('id, username, display_name, points, badges, level, created_at, avatar_url');
+
+    if (error) {
+      return NextResponse.json({ error: "Failed to get users" }, { status: 500 });
+    }
+
+    return NextResponse.json(users);
   } catch (error) {
     console.error("Error getting users:", error);
     return NextResponse.json({ error: "Failed to get users" }, { status: 500 });
   }
 }
 
-// POST: Create user (Registration)
+// Create user (Registration)
 export async function createUser(request: Request) {
   try {
     const body = await request.json();
@@ -238,19 +127,28 @@ export async function createUser(request: Request) {
       );
     }
 
-    const users = getUsers();
+    // Check if username already exists
+    const { data: existingUsername } = await supabase
+      .from('users')
+      .select('id')
+      .eq('username', username)
+      .single();
 
-    // Check if username or email already exist
-    if (
-      users.some((u) => u.username.toLowerCase() === username.toLowerCase())
-    ) {
+    if (existingUsername) {
       return NextResponse.json(
         { error: "Username already exists" },
         { status: 400 }
       );
     }
 
-    if (users.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
+    // Check if email already exists
+    const { data: existingEmail } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    if (existingEmail) {
       return NextResponse.json(
         { error: "Email already exists" },
         { status: 400 }
@@ -263,25 +161,31 @@ export async function createUser(request: Request) {
       .pbkdf2Sync(password, salt, 1000, 64, "sha512")
       .toString("hex");
 
-    const newUser: User = {
+    const newUser = {
       id: `user_${Date.now()}`,
       username,
       email,
-      displayName: displayName || username,
-      passwordHash,
+      display_name: displayName || username,
+      password_hash: passwordHash,
       salt,
       points: 10, // Starting points
       level: 1,
       badges: ["newcomer"], // Newcomer badge
-      createdAt: new Date().toISOString(),
-      avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${username}`, // Generated avatar
+      created_at: new Date().toISOString(),
+      avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${username}`, // Generated avatar
     };
 
-    users.push(newUser);
-    saveUsers(users);
+    const { error } = await supabase.from('users').insert(newUser);
+
+    if (error) {
+      return NextResponse.json(
+        { error: "Failed to create user" },
+        { status: 500 }
+      );
+    }
 
     // Return user without sensitive data
-    const { passwordHash: _, salt: __, ...userData } = newUser;
+    const { password_hash: _, salt: __, ...userData } = newUser;
     return NextResponse.json(userData);
   } catch (error) {
     console.error("Error creating user:", error);
@@ -292,7 +196,7 @@ export async function createUser(request: Request) {
   }
 }
 
-// POST: Login
+// Login
 export async function loginUser(request: Request) {
   try {
     const body = await request.json();
@@ -305,12 +209,13 @@ export async function loginUser(request: Request) {
       );
     }
 
-    const users = getUsers();
-    const user = users.find(
-      (u) => u.username.toLowerCase() === username.toLowerCase()
-    );
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('username', username)
+      .single();
 
-    if (!user) {
+    if (error || !user) {
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 }
@@ -321,7 +226,7 @@ export async function loginUser(request: Request) {
       .pbkdf2Sync(password, user.salt, 1000, 64, "sha512")
       .toString("hex");
 
-    if (hashedPassword !== user.passwordHash) {
+    if (hashedPassword !== user.password_hash) {
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 }
@@ -329,7 +234,7 @@ export async function loginUser(request: Request) {
     }
 
     // Successful login, return user without sensitive data
-    const { passwordHash, salt, ...userData } = user;
+    const { password_hash, salt, ...userData } = user;
     return NextResponse.json({
       ...userData,
       token: crypto.randomBytes(32).toString("hex"), // Simple session token
@@ -340,12 +245,11 @@ export async function loginUser(request: Request) {
   }
 }
 
-// PUT: Update user
+// Update user
 export async function updateUser(request: Request) {
   try {
     const body = await request.json();
-    const { id, displayName, avatarUrl, email, currentPassword, newPassword } =
-      body;
+    const { id, displayName, avatarUrl, email, currentPassword, newPassword } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -354,32 +258,39 @@ export async function updateUser(request: Request) {
       );
     }
 
-    const users = getUsers();
-    const userIndex = users.findIndex((u) => u.id === id);
+    const { data: user, error: getUserError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-    if (userIndex === -1) {
+    if (getUserError || !user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const user = users[userIndex];
+    // Prepare update object
+    const updates: Record<string, any> = {};
 
     // Update modifiable fields
-    if (displayName) user.displayName = displayName;
-    if (avatarUrl) user.avatarUrl = avatarUrl;
+    if (displayName) updates.display_name = displayName;
+    if (avatarUrl) updates.avatar_url = avatarUrl;
 
     // If email is being changed, check if it already exists
     if (email && email !== user.email) {
-      if (
-        users.some(
-          (u) => u.email.toLowerCase() === email.toLowerCase() && u.id !== id
-        )
-      ) {
+      const { data: existingEmail } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', email)
+        .neq('id', id)
+        .single();
+
+      if (existingEmail) {
         return NextResponse.json(
           { error: "Email already exists" },
           { status: 400 }
         );
       }
-      user.email = email;
+      updates.email = email;
     }
 
     // If password is being changed
@@ -388,7 +299,7 @@ export async function updateUser(request: Request) {
         .pbkdf2Sync(currentPassword, user.salt, 1000, 64, "sha512")
         .toString("hex");
 
-      if (hashedCurrentPassword !== user.passwordHash) {
+      if (hashedCurrentPassword !== user.password_hash) {
         return NextResponse.json(
           { error: "Current password is incorrect" },
           { status: 400 }
@@ -401,14 +312,39 @@ export async function updateUser(request: Request) {
         .pbkdf2Sync(newPassword, newSalt, 1000, 64, "sha512")
         .toString("hex");
 
-      user.passwordHash = newPasswordHash;
-      user.salt = newSalt;
+      updates.password_hash = newPasswordHash;
+      updates.salt = newSalt;
     }
 
-    saveUsers(users);
+    // Update user
+    const { error: updateError } = await supabase
+      .from('users')
+      .update(updates)
+      .eq('id', id);
 
-    // Updated user without sensitive data
-    const { passwordHash, salt, ...userData } = user;
+    if (updateError) {
+      return NextResponse.json(
+        { error: "Failed to update user" },
+        { status: 500 }
+      );
+    }
+
+    // Get updated user
+    const { data: updatedUser, error: getUpdatedError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (getUpdatedError || !updatedUser) {
+      return NextResponse.json(
+        { error: "Failed to retrieve updated user" },
+        { status: 500 }
+      );
+    }
+
+    // Return updated user without sensitive data
+    const { password_hash, salt, ...userData } = updatedUser;
     return NextResponse.json(userData);
   } catch (error) {
     console.error("Error updating user:", error);
@@ -419,7 +355,7 @@ export async function updateUser(request: Request) {
   }
 }
 
-// POST: Check badges
+// Check badges
 export async function checkBadges(request: Request) {
   try {
     const body = await request.json();
@@ -432,82 +368,125 @@ export async function checkBadges(request: Request) {
       );
     }
 
-    const users = getUsers();
-    const userIndex = users.findIndex((u) => u.id === userId);
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
 
-    if (userIndex === -1) {
+    if (userError || !user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const user = users[userIndex];
-    const badges = getBadges();
+    const { data: badges, error: badgesError } = await supabase
+      .from('badges')
+      .select('*');
+
+    if (badgesError) {
+      return NextResponse.json(
+        { error: "Failed to fetch badges" },
+        { status: 500 }
+      );
+    }
+
     const earnedBadges: Badge[] = [];
+    let userBadges = [...user.badges];
 
-    // Check badge conditions
-    // This function can be expanded as needed
+    // Check ratings count
+    const { data: ratings, error: ratingsError } = await supabase
+      .from('ratings')
+      .select('id')
+      .eq('user_id', userId);
 
-    // Example: Check ratings
-    const ratingsFilePath = path.join(process.cwd(), "data", "ratings.json");
-    if (fs.existsSync(ratingsFilePath)) {
-      const ratingsData = fs.readFileSync(ratingsFilePath, "utf8");
-      const ratings: Rating[] = JSON.parse(ratingsData);
-      const userRatings = ratings.filter((r) => r.userId === userId);
+    if (!ratingsError) {
+      const ratingsCount = ratings?.length || 0;
 
       // First rating badge
-      const firstRatingBadge = badges.find((b) => b.id === "first_rating");
-      if (
-        userRatings.length > 0 &&
-        !user.badges.includes("first_rating") &&
-        firstRatingBadge
-      ) {
+      const firstRatingBadge = badges.find(b => b.id === "first_rating");
+      if (ratingsCount > 0 && !userBadges.includes("first_rating") && firstRatingBadge) {
         earnedBadges.push(firstRatingBadge);
-        user.badges.push("first_rating");
+        userBadges.push("first_rating");
         user.points += firstRatingBadge.points;
       }
 
       // 10 ratings badge
-      const rating10Badge = badges.find((b) => b.id === "rating_10");
-      if (
-        userRatings.length >= 10 &&
-        !user.badges.includes("rating_10") &&
-        rating10Badge
-      ) {
+      const rating10Badge = badges.find(b => b.id === "rating_10");
+      if (ratingsCount >= 10 && !userBadges.includes("rating_10") && rating10Badge) {
         earnedBadges.push(rating10Badge);
-        user.badges.push("rating_10");
+        userBadges.push("rating_10");
         user.points += rating10Badge.points;
       }
     }
 
-    // Example: Check comments
-    const commentsFilePath = path.join(process.cwd(), "data", "comments.json");
-    if (fs.existsSync(commentsFilePath)) {
-      const commentsData = fs.readFileSync(commentsFilePath, "utf8");
-      const comments: Comment[] = JSON.parse(commentsData);
-      const userComments = comments.filter((c) => c.userId === userId);
+    // Check comments count
+    const { data: comments, error: commentsError } = await supabase
+      .from('comments')
+      .select('id')
+      .eq('user_id', userId);
 
-      const firstCommentBadge = badges.find((b) => b.id === "first_comment");
-      if (
-        userComments.length > 0 &&
-        !user.badges.includes("first_comment") &&
-        firstCommentBadge
-      ) {
+    if (!commentsError) {
+      const commentsCount = comments?.length || 0;
+
+      // First comment badge
+      const firstCommentBadge = badges.find(b => b.id === "first_comment");
+      if (commentsCount > 0 && !userBadges.includes("first_comment") && firstCommentBadge) {
         earnedBadges.push(firstCommentBadge);
-        user.badges.push("first_comment");
+        userBadges.push("first_comment");
         user.points += firstCommentBadge.points;
+      }
+
+      // 10 comments badge
+      const comment10Badge = badges.find(b => b.id === "comment_10");
+      if (commentsCount >= 10 && !userBadges.includes("comment_10") && comment10Badge) {
+        earnedBadges.push(comment10Badge);
+        userBadges.push("comment_10");
+        user.points += comment10Badge.points;
       }
     }
 
     // Calculate level based on points
     const newLevel = Math.floor(user.points / 100) + 1;
     const levelUp = newLevel > user.level;
-    user.level = newLevel;
+    
+    // Check for level badges
+    if (newLevel >= 5 && !userBadges.includes("level_5")) {
+      const level5Badge = badges.find(b => b.id === "level_5");
+      if (level5Badge) {
+        earnedBadges.push(level5Badge);
+        userBadges.push("level_5");
+        user.points += level5Badge.points;
+      }
+    }
 
-    saveUsers(users);
+    if (newLevel >= 10 && !userBadges.includes("level_10")) {
+      const level10Badge = badges.find(b => b.id === "level_10");
+      if (level10Badge) {
+        earnedBadges.push(level10Badge);
+        userBadges.push("level_10");
+        user.points += level10Badge.points;
+      }
+    }
+
+    // Update user if badges or points changed
+    if (earnedBadges.length > 0 || levelUp) {
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({
+          badges: userBadges,
+          points: user.points,
+          level: newLevel,
+        })
+        .eq('id', userId);
+
+      if (updateError) {
+        console.error("Error updating user badges:", updateError);
+      }
+    }
 
     return NextResponse.json({
       earnedBadges,
       levelUp,
-      currentLevel: user.level,
+      currentLevel: newLevel,
       currentPoints: user.points,
     });
   } catch (error) {
@@ -532,4 +511,9 @@ export async function POST(request: Request) {
     default:
       return createUser(request);
   }
+}
+
+// PUT handler for updates
+export async function PUT(request: Request) {
+  return updateUser(request);
 }

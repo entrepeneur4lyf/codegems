@@ -1,6 +1,3 @@
-// Fix to ProjectDetailPage.tsx
-// Improved data fetching, error handling, and UI display
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +10,7 @@ import {
   Bookmark,
   CheckCircle,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
 import { useSaved } from "@/app/saved/SavedContext";
 import RatingSystem from "@/components/RatingSystem";
@@ -25,6 +23,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import supabase from "@/lib/supabase";
 
 interface Language {
   [key: string]: number;
@@ -62,7 +61,6 @@ const languageColors: { [key: string]: string } = {
   Batchfile: "#C1F12E",
   Makefile: "#427819",
   Jinja: "#a52a22",
-  // Add more language colors here as needed
   Rust: "#dea584",
   Go: "#00ADD8",
   Java: "#b07219",
@@ -160,19 +158,18 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
       setError(null);
       
       try {
-        const response = await fetch("/api/projects");
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('name', projectName)
+          .single();
         
-        if (!response.ok) {
-          throw new Error(`Failed to fetch projects: ${response.status}`);
+        if (error) {
+          throw new Error(`Failed to fetch project: ${error.message}`);
         }
         
-        const projects = await response.json();
-        const foundProject = projects.find(
-          (p: Project) => p.name === projectName
-        );
-
-        if (foundProject) {
-          setProject(foundProject);
+        if (data) {
+          setProject(data);
         } else {
           setError("Project not found");
         }
@@ -204,7 +201,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 mt-16">
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mb-4"></div>
+            <Loader2 className="h-12 w-12 animate-spin text-purple-500 mb-4" />
             <p className="text-gray-400">Loading project details...</p>
           </div>
         </div>

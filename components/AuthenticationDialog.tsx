@@ -52,11 +52,11 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!loginUsername.trim()) {
-      newErrors.loginUsername = "Benutzername wird benötigt";
+      newErrors.loginUsername = "Username is required";
     }
 
     if (!loginPassword) {
-      newErrors.loginPassword = "Passwort wird benötigt";
+      newErrors.loginPassword = "Password is required";
     }
 
     setErrors(newErrors);
@@ -67,27 +67,27 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!registerUsername.trim()) {
-      newErrors.registerUsername = "Benutzername wird benötigt";
+      newErrors.registerUsername = "Username is required";
     } else if (registerUsername.length < 3) {
       newErrors.registerUsername =
-        "Benutzername muss mindestens 3 Zeichen lang sein";
+        "Username must be at least 3 characters long";
     }
 
     if (!registerEmail.trim()) {
-      newErrors.registerEmail = "E-Mail wird benötigt";
+      newErrors.registerEmail = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(registerEmail)) {
-      newErrors.registerEmail = "Ungültiges E-Mail-Format";
+      newErrors.registerEmail = "Invalid email format";
     }
 
     if (!registerPassword) {
-      newErrors.registerPassword = "Passwort wird benötigt";
+      newErrors.registerPassword = "Password is required";
     } else if (registerPassword.length < 6) {
       newErrors.registerPassword =
-        "Passwort muss mindestens 6 Zeichen lang sein";
+        "Password must be at least 6 characters long";
     }
 
     if (registerPassword !== registerConfirmPassword) {
-      newErrors.registerConfirmPassword = "Passwörter stimmen nicht überein";
+      newErrors.registerConfirmPassword = "Passwords don't match";
     }
 
     setErrors(newErrors);
@@ -173,14 +173,14 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
           <form onSubmit={handleLoginSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="username" className="text-white">
-                Benutzername
+                Username
               </Label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="username"
                   type="text"
-                  placeholder="Dein Benutzername"
+                  placeholder="Your username"
                   value={loginUsername}
                   onChange={(e) => setLoginUsername(e.target.value)}
                   className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
@@ -193,14 +193,14 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
 
             <div className="space-y-2">
               <Label htmlFor="password" className="text-white">
-                Passwort
+                Password
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Dein Passwort"
+                  placeholder="Your password"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
@@ -219,12 +219,12 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
               {isLoading ? (
                 <span className="flex items-center gap-2">
                   <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                  Anmelden...
+                  Signing in...
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
                   <LogIn className="h-4 w-4" />
-                  Anmelden
+                  Sign In
                 </span>
               )}
             </Button>
@@ -235,14 +235,14 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
           <form onSubmit={handleRegisterSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="register-username" className="text-white">
-                Benutzername
+                Username
               </Label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="register-username"
                   type="text"
-                  placeholder="Wähle einen Benutzernamen"
+                  placeholder="Choose a username"
                   value={registerUsername}
                   onChange={(e) => setRegisterUsername(e.target.value)}
                   className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
@@ -257,14 +257,14 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
 
             <div className="space-y-2">
               <Label htmlFor="register-email" className="text-white">
-                E-Mail
+                Email
               </Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="register-email"
                   type="email"
-                  placeholder="deine@email.de"
+                  placeholder="your@email.com"
                   value={registerEmail}
                   onChange={(e) => setRegisterEmail(e.target.value)}
                   className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
@@ -277,14 +277,14 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
 
             <div className="space-y-2">
               <Label htmlFor="register-display-name" className="text-white">
-                Anzeigename (optional)
+                Display Name (optional)
               </Label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="register-display-name"
                   type="text"
-                  placeholder="Wie möchtest du genannt werden?"
+                  placeholder="How would you like to be called?"
                   value={registerDisplayName}
                   onChange={(e) => setRegisterDisplayName(e.target.value)}
                   className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
@@ -294,14 +294,14 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
 
             <div className="space-y-2">
               <Label htmlFor="register-password" className="text-white">
-                Passwort
+                Password
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="register-password"
                   type="password"
-                  placeholder="Erstelle ein sicheres Passwort"
+                  placeholder="Create a secure password"
                   value={registerPassword}
                   onChange={(e) => setRegisterPassword(e.target.value)}
                   className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
@@ -316,14 +316,14 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
 
             <div className="space-y-2">
               <Label htmlFor="register-confirm-password" className="text-white">
-                Passwort bestätigen
+                Confirm Password
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="register-confirm-password"
                   type="password"
-                  placeholder="Passwort bestätigen"
+                  placeholder="Confirm password"
                   value={registerConfirmPassword}
                   onChange={(e) => setRegisterConfirmPassword(e.target.value)}
                   className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
@@ -339,8 +339,7 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
             <div className="bg-slate-700/50 rounded-lg p-3 flex items-start gap-2">
               <Gift className="text-purple-400 h-5 w-5 mt-0.5 flex-shrink-0" />
               <p className="text-sm text-gray-300">
-                Bei der Registrierung erhältst du dein erstes Abzeichen und 10
-                Punkte!
+                When you register, you'll get your first badge and 10 points!
               </p>
             </div>
 
@@ -352,12 +351,12 @@ const AuthenticationDialog: React.FC<AuthDialogProps> = ({
               {isLoading ? (
                 <span className="flex items-center gap-2">
                   <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                  Registrieren...
+                  Registering...
                 </span>
               ) : (
                 <span className="flex items-center gap-2">
                   <UserPlus className="h-4 w-4" />
-                  Registrieren
+                  Register
                 </span>
               )}
             </Button>

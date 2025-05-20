@@ -5,15 +5,16 @@ import { Trophy, Medal, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import BadgeDisplay from "@/components/BadgeDisplay";
 import { useAuth } from "@/app/context/AuthContext";
+import supabase from "@/lib/supabase";
 
 interface LeaderboardUser {
   id: string;
   username: string;
-  displayName: string;
+  display_name: string;
   points: number;
   level: number;
   badges: string[];
-  avatarUrl: string;
+  avatar_url: string;
 }
 
 const LeaderboardDisplay: React.FC = () => {
@@ -25,11 +26,18 @@ const LeaderboardDisplay: React.FC = () => {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await fetch("/api/users?leaderboard=true");
-        if (response.ok) {
-          const leaderboardData = await response.json();
-          setUsers(leaderboardData);
+        const { data, error } = await supabase
+          .from('users')
+          .select('id, username, display_name, points, badges, level, avatar_url')
+          .order('points', { ascending: false })
+          .limit(10);
+        
+        if (error) {
+          console.error("Error fetching leaderboard:", error);
+          return;
         }
+        
+        setUsers(data || []);
       } catch (error) {
         console.error("Error fetching leaderboard:", error);
       } finally {
@@ -51,14 +59,13 @@ const LeaderboardDisplay: React.FC = () => {
   if (users.length === 0) {
     return (
       <div className="py-16 text-center">
-        <p className="text-gray-400">Keine Benutzer gefunden.</p>
+        <p className="text-gray-400">No users found.</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-
       <div className="grid grid-cols-1 gap-4">
         {users.map((leaderboardUser, index) => {
           const isCurrentUser = user && user.id === leaderboardUser.id;
@@ -91,10 +98,10 @@ const LeaderboardDisplay: React.FC = () => {
                   </div>
 
                   {/* User Avatar */}
-                  {leaderboardUser.avatarUrl ? (
+                  {leaderboardUser.avatar_url ? (
                     <img
-                      src={leaderboardUser.avatarUrl}
-                      alt={leaderboardUser.displayName}
+                      src={leaderboardUser.avatar_url}
+                      alt={leaderboardUser.display_name}
                       className="w-12 h-12 rounded-full"
                     />
                   ) : null}
@@ -103,11 +110,11 @@ const LeaderboardDisplay: React.FC = () => {
                 <div className="flex-grow">
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-white">
-                      {leaderboardUser.displayName}
+                      {leaderboardUser.display_name}
                     </h3>
                     {isCurrentUser && (
                       <Badge className="bg-purple-500/20 text-purple-300 border-none">
-                        Du
+                        You
                       </Badge>
                     )}
                   </div>
@@ -124,7 +131,7 @@ const LeaderboardDisplay: React.FC = () => {
                     <span className="font-bold text-lg text-purple-400">
                       {leaderboardUser.points}
                     </span>
-                    <span className="text-gray-400">Punkte</span>
+                    <span className="text-gray-400">points</span>
                   </div>
                   <div className="flex items-center gap-1 justify-end mt-1">
                     <Award className="w-4 h-4 text-yellow-500" />

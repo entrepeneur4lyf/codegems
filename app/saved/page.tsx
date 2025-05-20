@@ -11,6 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import supabase from '@/lib/supabase';
 
 interface Language {
   [key: string]: number;
@@ -23,7 +24,7 @@ interface Project {
   forks: string;
   tags: string[];
   url: string;
-  color: string;
+  color?: string;
   languages: Language;
 }
 
@@ -44,7 +45,17 @@ const languageColors: { [key: string]: string } = {
   "Inno Setup": '#264b99',
   Batchfile: '#C1F12E',
   Makefile: '#427819',
-  Jinja: '#a52a22'
+  Jinja: '#a52a22',
+  Rust: '#dea584',
+  Go: '#00ADD8',
+  Java: '#b07219',
+  Kotlin: '#F18E33',
+  Swift: '#ffac45',
+  "C++": '#f34b7d',
+  "C#": '#178600',
+  "C": '#555555',
+  PHP: '#4F5D95',
+  Dart: '#00B4AB',
 };
 
 const LanguageBar = ({ languages }: { languages: Language }) => {
@@ -123,23 +134,47 @@ export default function SavedPage() {
   const { removeProject } = useSaved();
   const [savedProjectDetails, setSavedProjectDetails] = useState<Project[]>([]);
   const [showWarning, setShowWarning] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchSavedProjects = async () => {
+      setIsLoading(true);
+      setError(null);
+      
       try {
+        // Get saved projects from localStorage
         const storedProjects = localStorage.getItem('savedProjects');
-        const latestSavedProjects: string[] = storedProjects ? JSON.parse(storedProjects) : [];
+        const savedProjectNames: string[] = storedProjects ? JSON.parse(storedProjects) : [];
 
-        const response = await fetch('/api/projects');
-        const allProjects: Project[] = await response.json();
+        if (savedProjectNames.length === 0) {
+          setSavedProjectDetails([]);
+          setIsLoading(false);
+          return;
+        }
 
-        const filteredProjects = allProjects
-          .filter((project) => latestSavedProjects.includes(project.name))
-          .map((project) => ({ ...project, color: getRandomGradient() }));
+        // Fetch project details from Supabase
+        const { data: allProjects, error } = await supabase
+          .from('projects')
+          .select('*')
+          .in('name', savedProjectNames);
 
-        setSavedProjectDetails(filteredProjects);
+        if (error) {
+          throw new Error(`Error fetching projects: ${error.message}`);
+        }
+        
+        // Apply random gradients to projects
+        const projectsWithColors = allProjects.map((project: Project) => ({
+          ...project,
+          color: getRandomGradient()
+        }));
+        
+        setSavedProjectDetails(projectsWithColors);
       } catch (error) {
         console.error('Failed to fetch projects:', error);
+        setError('Failed to load saved projects. Please try again later.');
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -153,6 +188,40 @@ export default function SavedPage() {
     );
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pt-24 p-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 text-transparent bg-clip-text">
+              Saved Projects
+            </h1>
+            <div className="flex items-center justify-center mt-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pt-24 p-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 text-transparent bg-clip-text">
+              Saved Projects
+            </h1>
+            <div className="bg-red-500/20 border border-red-500 rounded-lg p-4 max-w-xl mx-auto">
+              <p className="text-white">{error}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="pt-24 p-8">
@@ -165,7 +234,7 @@ export default function SavedPage() {
               <div className="flex items-center justify-center gap-1">
                 <p className="text-yellow-400/80 text-sm flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide-alert-triangle"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-                  Projects are saved in your browsers local storage and will be deleted if you clear your browser data
+                  Projects are saved in your browser's local storage and will be deleted if you clear your browser data
                 </p>
                 <button
                   onClick={() => setShowWarning(false)}
@@ -184,7 +253,7 @@ export default function SavedPage() {
                 <div
                   key={index}
                   className="group relative cursor-pointer"
-                  onClick={() => window.open(project.url, '_blank', 'noopener,noreferrer')}
+                  onClick={() => window.location.href = `/${project.name}`}
                 >
                   <div
                     className={`absolute inset-0 ${project.color} rounded-xl blur-md opacity-20 group-hover:opacity-30 transition-all duration-500`}

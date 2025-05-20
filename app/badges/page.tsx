@@ -23,14 +23,14 @@ const BadgesPage = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 mt-10">
         <div className="container mx-auto px-4">
           <div className="max-w-md mx-auto bg-slate-800/50 border border-slate-700 rounded-lg p-8 text-center">
-<h1 className="text-2xl font-bold text-white mb-4">Badges</h1>
-<p className="text-gray-400 mb-6">You need to be signed in to view your badges.</p>
+            <h1 className="text-2xl font-bold text-white mb-4">Badges</h1>
+            <p className="text-gray-400 mb-6">You need to be signed in to view your badges.</p>
 
             <Button
               onClick={() => setShowAuthDialog(true)}
               className="bg-purple-500 hover:bg-purple-600 text-white"
             >
-              Anmelden
+              Sign In
             </Button>
 
             <AuthenticationDialog
@@ -49,10 +49,10 @@ const BadgesPage = () => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-yellow-400 to-purple-400 text-transparent bg-clip-text">
-              Deine Abzeichen
+              Your Badges
             </h1>
             <p className="text-gray-400 text-lg">
-              Sammle Abzeichen, indem du auf der Plattform aktiv bist!
+              Collect badges by being active on the platform!
             </p>
           </div>
 
@@ -60,10 +60,10 @@ const BadgesPage = () => {
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Award className="text-yellow-500 h-6 w-6" />
-                <CardTitle>Freigeschaltete Abzeichen</CardTitle>
+                <CardTitle>Unlocked Badges</CardTitle>
               </div>
               <CardDescription className="text-gray-400">
-                Abzeichen, die du bereits verdient hast
+                Badges you have already earned
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -73,9 +73,9 @@ const BadgesPage = () => {
 
           <Card className="bg-slate-800/50 border-slate-700 text-white">
             <CardHeader>
-              <CardTitle>Verfügbare Abzeichen</CardTitle>
+              <CardTitle>Available Badges</CardTitle>
               <CardDescription className="text-gray-400">
-                Alle Abzeichen, die du sammeln kannst
+                All badges you can collect
               </CardDescription>
             </CardHeader>
             <CardContent>

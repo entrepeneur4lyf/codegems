@@ -18,10 +18,10 @@ const LeaderboardPage = () => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-yellow-400 to-purple-400 text-transparent bg-clip-text">
-              Bestenliste
+              Leaderboard
             </h1>
             <p className="text-gray-400 text-lg">
-              Die aktivsten Mitglieder der Community
+              The most active members of the community
             </p>
           </div>
 
@@ -29,10 +29,10 @@ const LeaderboardPage = () => {
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Trophy className="text-yellow-500 h-6 w-6" />
-                <CardTitle>Top Mitwirkende</CardTitle>
+                <CardTitle>Top Contributors</CardTitle>
               </div>
               <CardDescription className="text-gray-400">
-                Benutzer mit den meisten Punkten
+                Users with the most points
               </CardDescription>
             </CardHeader>
             <CardContent>

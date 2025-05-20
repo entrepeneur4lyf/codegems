@@ -95,14 +95,14 @@ const Navbar = () => {
 
             <NavLink
               icon={Send}
-              text="Projekt vorschlagen"
+              text="Suggest Project"
               href="/request"
               activeNav={activeNav}
               setActiveNav={setActiveNav}
             />
             <NavLink
               icon={Trophy}
-              text="Bestenliste"
+              text="Leaderboard"
               href="/leaderboard"
               activeNav={activeNav}
               setActiveNav={setActiveNav}
@@ -148,13 +148,13 @@ const Navbar = () => {
                   <Link href="/profile">
                     <DropdownMenuItem className="cursor-pointer hover:bg-slate-700">
                       <User className="mr-2 h-4 w-4" />
-                      <span>Profil</span>
+                      <span>Profile</span>
                     </DropdownMenuItem>
                   </Link>
                   <Link href="/badges">
                     <DropdownMenuItem className="cursor-pointer hover:bg-slate-700">
                       <Award className="mr-2 h-4 w-4" />
-                      <span>Abzeichen</span>
+                      <span>Badges</span>
                     </DropdownMenuItem>
                   </Link>
                   <DropdownMenuSeparator className="bg-slate-700" />
@@ -163,7 +163,7 @@ const Navbar = () => {
                     className="cursor-pointer hover:bg-slate-700 text-red-400 hover:text-red-300"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
-                    <span>Abmelden</span>
+                    <span>Sign Out</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -172,7 +172,7 @@ const Navbar = () => {
                 onClick={() => setShowAuthDialog(true)}
                 className="bg-purple-500 hover:bg-purple-600 text-white"
               >
-                Anmelden
+                Sign In
               </Button>
             )}
 
@@ -206,21 +206,21 @@ const Navbar = () => {
           />
           <NavLink
             icon={Bookmark}
-            text="Gespeichert"
+            text="Saved"
             href="/saved"
             activeNav={activeNav}
             setActiveNav={setActiveNav}
           />
           <NavLink
             icon={Send}
-            text="Projekt vorschlagen"
+            text="Suggest Project"
             href="/request"
             activeNav={activeNav}
             setActiveNav={setActiveNav}
           />
           <NavLink
             icon={Trophy}
-            text="Bestenliste"
+            text="Leaderboard"
             href="/leaderboard"
             activeNav={activeNav}
             setActiveNav={setActiveNav}
@@ -229,14 +229,14 @@ const Navbar = () => {
             <>
               <NavLink
                 icon={User}
-                text="Profil"
+                text="Profile"
                 href="/profile"
                 activeNav={activeNav}
                 setActiveNav={setActiveNav}
               />
               <NavLink
                 icon={Award}
-                text="Abzeichen"
+                text="Badges"
                 href="/badges"
                 activeNav={activeNav}
                 setActiveNav={setActiveNav}
@@ -246,7 +246,7 @@ const Navbar = () => {
                 onClick={logout}
               >
                 <LogOut className="h-5 w-5" />
-                <span>Abmelden</span>
+                <span>Sign Out</span>
               </div>
             </>
           )}

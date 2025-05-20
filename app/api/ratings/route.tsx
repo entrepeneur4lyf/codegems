@@ -1,47 +1,34 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import supabase from "@/lib/supabase";
 
-const ratingsFilePath = path.join(process.cwd(), "data", "ratings.json");
-
-// Hilfsfunktionen
-const getRatings = () => {
-  if (!fs.existsSync(ratingsFilePath)) {
-    fs.writeFileSync(ratingsFilePath, JSON.stringify([]));
-    return [];
-  }
-  const data = fs.readFileSync(ratingsFilePath, "utf8");
-  return JSON.parse(data);
-};
-
-const saveRatings = (ratings: any) => {
-  fs.writeFileSync(ratingsFilePath, JSON.stringify(ratings, null, 2));
-};
-
-// GET: Alle Bewertungen abrufen oder nach Projekt filtern
+// GET: Get all ratings or filter by project or user
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const projectName = searchParams.get("project");
   const userId = searchParams.get("userId");
 
   try {
-    const ratings = getRatings();
+    let query = supabase.from('ratings').select('*');
 
     if (projectName) {
-      const filteredRatings = ratings.filter(
-        (r: { projectName: string }) => r.projectName === projectName
-      );
-      return NextResponse.json(filteredRatings);
+      query = query.eq('project_name', projectName);
     }
 
     if (userId) {
-      const userRatings = ratings.filter(
-        (r: { userId: string }) => r.userId === userId
-      );
-      return NextResponse.json(userRatings);
+      query = query.eq('user_id', userId);
     }
 
-    return NextResponse.json(ratings);
+    const { data: ratings, error } = await query;
+
+    if (error) {
+      console.error("Error getting ratings:", error);
+      return NextResponse.json(
+        { error: "Failed to get ratings" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(ratings || []);
   } catch (error) {
     console.error("Error getting ratings:", error);
     return NextResponse.json(
@@ -51,7 +38,7 @@ export async function GET(request: Request) {
   }
 }
 
-// POST: Neue Bewertung erstellen oder bestehende aktualisieren
+// POST: Create a new rating or update an existing one
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -64,53 +51,73 @@ export async function POST(request: Request) {
       );
     }
 
-    const ratings = getRatings();
-    const existingRatingIndex = ratings.findIndex(
-      (r: { projectName: any; userId: any }) =>
-        r.projectName === projectName && r.userId === userId
-    );
+    // Check if rating already exists
+    const { data: existingRating, error: findError } = await supabase
+      .from('ratings')
+      .select('*')
+      .eq('project_name', projectName)
+      .eq('user_id', userId)
+      .single();
 
-    if (existingRatingIndex !== -1) {
-      // Aktualisieren einer bestehenden Bewertung
-      ratings[existingRatingIndex] = {
-        ...ratings[existingRatingIndex],
-        rating,
-        review: review || ratings[existingRatingIndex].review,
-        updatedAt: new Date().toISOString(),
-      };
+    const now = new Date().toISOString();
+
+    if (existingRating) {
+      // Update existing rating
+      const { error: updateError } = await supabase
+        .from('ratings')
+        .update({
+          rating,
+          review: review || existingRating.review,
+          updated_at: now
+        })
+        .eq('id', existingRating.id);
+
+      if (updateError) {
+        return NextResponse.json(
+          { error: "Failed to update rating" },
+          { status: 500 }
+        );
+      }
     } else {
-      // Neue Bewertung erstellen
-      ratings.push({
+      // Create new rating
+      const newRating = {
         id: `rating_${Date.now()}`,
-        projectName,
-        userId,
+        project_name: projectName,
+        user_id: userId,
         rating,
         review: review || "",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
+        created_at: now,
+        updated_at: now
+      };
 
-      // Punkte für neue Bewertung vergeben
-      try {
-        const usersFilePath = path.join(process.cwd(), "data", "users.json");
-        if (fs.existsSync(usersFilePath)) {
-          const usersData = fs.readFileSync(usersFilePath, "utf8");
-          const users = JSON.parse(usersData);
-          const userIndex = users.findIndex(
-            (u: { id: any }) => u.id === userId
-          );
+      const { error: insertError } = await supabase
+        .from('ratings')
+        .insert(newRating);
 
-          if (userIndex !== -1) {
-            users[userIndex].points = (users[userIndex].points || 0) + 5;
-            fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
-          }
-        }
-      } catch (pointsError) {
-        console.error("Error updating user points:", pointsError);
+      if (insertError) {
+        return NextResponse.json(
+          { error: "Failed to save rating" },
+          { status: 500 }
+        );
+      }
+
+      // Award points for new rating
+      const { data: userData, error: getUserError } = await supabase
+        .from('users')
+        .select('points')
+        .eq('id', userId)
+        .single();
+
+      if (!getUserError && userData) {
+        await supabase
+          .from('users')
+          .update({
+            points: (userData.points || 0) + 5
+          })
+          .eq('id', userId);
       }
     }
 
-    saveRatings(ratings);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error saving rating:", error);
@@ -121,7 +128,7 @@ export async function POST(request: Request) {
   }
 }
 
-// DELETE: Bewertung löschen
+// DELETE: Remove a rating
 export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
   const ratingId = searchParams.get("id");
@@ -134,16 +141,18 @@ export async function DELETE(request: Request) {
   }
 
   try {
-    const ratings = getRatings();
-    const filteredRatings = ratings.filter(
-      (r: { id: string }) => r.id !== ratingId
-    );
+    const { error } = await supabase
+      .from('ratings')
+      .delete()
+      .eq('id', ratingId);
 
-    if (filteredRatings.length === ratings.length) {
-      return NextResponse.json({ error: "Rating not found" }, { status: 404 });
+    if (error) {
+      return NextResponse.json(
+        { error: "Failed to delete rating" },
+        { status: 500 }
+      );
     }
 
-    saveRatings(filteredRatings);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting rating:", error);

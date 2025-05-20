@@ -122,7 +122,7 @@ const RequestPage = () => {
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="text-green-500 mt-1 shrink-0" />
-                    <p>Include detailed descriptions to help others understand the projects value</p>
+                    <p>Include detailed descriptions to help others understand the project's value</p>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="text-green-500 mt-1 shrink-0" />
@@ -135,7 +135,7 @@ const RequestPage = () => {
                   <ul className="space-y-3">
                     <li className="flex items-start gap-2">
                       <Check className="text-green-500 mt-1 shrink-0" />
-                      <p>Clear description of the projects purpose and benefits</p>
+                      <p>Clear description of the project's purpose and benefits</p>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="text-green-500 mt-1 shrink-0" />
@@ -245,7 +245,7 @@ const RequestPage = () => {
             </AlertDialogTitle>
             <AlertDialogDescription className="text-gray-300 space-y-4">
               <p>
-                Dont miss updates about your submission! Join our vibrant Discord community to:
+                Don't miss updates about your submission! Join our vibrant Discord community to:
               </p>
               <ul className="space-y-2">
                 <li className="flex items-start gap-2">

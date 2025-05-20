@@ -1,5 +1,4 @@
-// Improved Rating System Component
-// File: components/RatingSystem.tsx
+"use client";
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Star } from "lucide-react";
@@ -7,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/app/context/AuthContext";
-import ErrorHandler from "@/components/ErrorHandler"; // Import our new error handler
+import ErrorHandler from "@/components/ErrorHandler";
+import supabase from "@/lib/supabase";
 
 interface RatingSystemProps {
   projectName: string;
@@ -16,12 +16,20 @@ interface RatingSystemProps {
 
 interface Rating {
   id: string;
-  projectName: string;
-  userId: string;
+  project_name: string;
+  user_id: string;
   rating: number;
-  review: string;
-  createdAt: string;
-  updatedAt: string;
+  review: string | null;
+  created_at: string;
+  updated_at: string;
+  user?: User;
+}
+
+interface User {
+  id: string;
+  username: string;
+  display_name: string;
+  avatar_url: string;
 }
 
 interface Badge {
@@ -53,9 +61,37 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [users, setUsers] = useState<Record<string, User>>({});
 
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
+
+  // Function to fetch user data for a list of user IDs
+  const fetchUserData = async (userIds: string[]) => {
+    if (!userIds.length) return {};
+
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, username, display_name, avatar_url')
+        .in('id', userIds);
+      
+      if (error) {
+        console.error("Error fetching user data:", error);
+        return {};
+      }
+
+      const usersMap: Record<string, User> = {};
+      data.forEach((userData: User) => {
+        usersMap[userData.id] = userData;
+      });
+
+      return usersMap;
+    } catch (error) {
+      console.error("Error in fetchUserData:", error);
+      return {};
+    }
+  };
 
   // Function to fetch ratings
   const fetchRatings = useCallback(async () => {
@@ -72,23 +108,37 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
       }
       
       const ratings = await response.json();
-      setProjectRatings(ratings);
+
+      // Extract unique user IDs
+      const userIds = Array.from(new Set(ratings.map((r: Rating) => r.user_id)));
+      
+      // Fetch user data for all ratings in a single request
+      const usersData = await fetchUserData(userIds);
+      setUsers(usersData);
+      
+      // Attach user data to ratings
+      const enhancedRatings = ratings.map((rating: Rating) => ({
+        ...rating,
+        user: usersData[rating.user_id]
+      }));
+      
+      setProjectRatings(enhancedRatings);
 
       // Calculate average rating
-      if (ratings.length > 0) {
-        const sum = ratings.reduce(
+      if (enhancedRatings.length > 0) {
+        const sum = enhancedRatings.reduce(
           (total: number, r: Rating) => total + r.rating,
           0
         );
-        setAverageRating(sum / ratings.length);
+        setAverageRating(sum / enhancedRatings.length);
       } else {
         setAverageRating(null);
       }
 
       // Check if the current user has already rated
       if (isAuthenticated && user) {
-        const userExistingRating = ratings.find(
-          (r: Rating) => r.userId === user.id
+        const userExistingRating = enhancedRatings.find(
+          (r: Rating) => r.user_id === user.id
         );
         
         if (userExistingRating) {
@@ -188,6 +238,14 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
           : "Your rating has been successfully submitted.",
       });
 
+      // Create a user object for the current user
+      const currentUser = {
+        id: user.id,
+        username: user.username,
+        display_name: user.displayName,
+        avatar_url: user.avatarUrl
+      };
+
       // Check for badges if this is a new rating
       if (!existingRating) {
         try {
@@ -227,10 +285,62 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
           console.error("Error checking badges:", badgeError);
           // Non-critical error, don't show to user
         }
-      }
 
-      // Refresh the ratings
-      await fetchRatings();
+        // Create a new rating object for immediate display
+        const newRating = {
+          id: `rating_${Date.now()}`,
+          project_name: projectName,
+          user_id: user.id,
+          rating: userRating,
+          review: review || "",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          user: currentUser
+        };
+
+        // Add to the existing ratings
+        setProjectRatings(prev => {
+          const updatedRatings = [...prev, newRating];
+          
+          // Recalculate average
+          const sum = updatedRatings.reduce((total, r) => total + r.rating, 0);
+          setAverageRating(sum / updatedRatings.length);
+          
+          return updatedRatings;
+        });
+        
+        // Set as existing rating
+        setExistingRating(newRating);
+      } else {
+        // Update existing rating
+        setProjectRatings(prev => {
+          const updatedRatings = prev.map(r => {
+            if (r.id === existingRating.id) {
+              return {
+                ...r,
+                rating: userRating,
+                review: review || "",
+                updated_at: new Date().toISOString()
+              };
+            }
+            return r;
+          });
+          
+          // Recalculate average
+          const sum = updatedRatings.reduce((total, r) => total + r.rating, 0);
+          setAverageRating(sum / updatedRatings.length);
+          
+          return updatedRatings;
+        });
+        
+        // Update existing rating
+        setExistingRating(prev => ({
+          ...prev!,
+          rating: userRating,
+          review: review || "",
+          updated_at: new Date().toISOString()
+        }));
+      }
 
       // Call the callback if provided
       if (onRatingSubmit) {
@@ -358,8 +468,8 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
                 .filter((r) => r.review) // Only show ratings with reviews
                 .sort(
                   (a, b) =>
-                    new Date(b.createdAt).getTime() -
-                    new Date(a.createdAt).getTime()
+                    new Date(b.created_at).getTime() -
+                    new Date(a.created_at).getTime()
                 )
                 .map((rating) => (
                   <div
@@ -367,33 +477,51 @@ const RatingSystem: React.FC<RatingSystemProps> = ({
                     className="bg-slate-800/50 p-4 rounded-lg border border-slate-700"
                   >
                     <div className="flex justify-between items-start">
-                      <div className="flex gap-2 items-center">
-                        <div className="flex">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                              key={star}
-                              className={`w-4 h-4 ${
-                                star <= rating.rating
-                                  ? "text-yellow-400 fill-yellow-400"
-                                  : "text-gray-400"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-sm text-gray-400">
-                          {new Date(rating.createdAt).toLocaleDateString()}
-                        </span>
+                      <div className="flex items-center gap-3">
+                        {rating.user && (
+                          <>
+                            {rating.user.avatar_url ? (
+                              <img
+                                src={rating.user.avatar_url}
+                                alt={rating.user.username}
+                                className="w-8 h-8 rounded-full"
+                              />
+                            ) : null}
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-white">
+                                  {rating.user.display_name}
+                                </span>
+                                {rating.user_id === user?.id && (
+                                  <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded">
+                                    You
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star
+                                    key={star}
+                                    className={`w-4 h-4 ${
+                                      star <= rating.rating
+                                        ? "text-yellow-400 fill-yellow-400"
+                                        : "text-gray-400"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
-
-                      {rating.userId === user?.id && (
-                        <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded">
-                          Your rating
-                        </span>
-                      )}
+                      
+                      <span className="text-sm text-gray-400">
+                        {new Date(rating.created_at).toLocaleDateString()}
+                      </span>
                     </div>
 
                     {rating.review && (
-                      <p className="mt-2 text-gray-300">{rating.review}</p>
+                      <p className="mt-3 text-gray-300">{rating.review}</p>
                     )}
                   </div>
                 ))}

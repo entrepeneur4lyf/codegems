@@ -1,4 +1,3 @@
-// Fix the token expiration and validation in AuthContext.tsx
 "use client"
 import React, {
   createContext,
@@ -8,9 +7,10 @@ import React, {
   ReactNode,
 } from "react";
 import { useToast } from "@/hooks/use-toast";
+import supabase from "@/lib/supabase";
+import crypto from 'crypto';
 
 interface User {
-  tokenExpiration: any;
   id: string;
   username: string;
   displayName: string;
@@ -20,6 +20,7 @@ interface User {
   badges: string[];
   avatarUrl: string;
   token?: string;
+  tokenExpiration?: number;
 }
 
 interface AuthContextType {
@@ -74,6 +75,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(false);
   }, []);
 
+  // Login function using Supabase
   const login = async (
     username: string,
     password: string
@@ -81,38 +83,56 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
 
-      const response = await fetch("/api/users?action=login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
+      // Get the user by username
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('username', username)
+        .single();
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (userError || !userData) {
         toast({
           title: "Login failed",
-          description: errorData.error || "Invalid credentials.",
+          description: "Invalid username or password.",
           variant: "destructive",
         });
         return false;
       }
 
-      const userData = await response.json();
-      
-      // Add token expiration
-      const userWithExpiration = {
-        ...userData,
+      // Verify password
+      const hashedPassword = crypto
+        .pbkdf2Sync(password, userData.salt, 1000, 64, 'sha512')
+        .toString('hex');
+
+      if (hashedPassword !== userData.password_hash) {
+        toast({
+          title: "Login failed",
+          description: "Invalid username or password.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Format the user object to match our frontend structure
+      const formattedUser: User = {
+        id: userData.id,
+        username: userData.username,
+        displayName: userData.display_name,
+        email: userData.email,
+        points: userData.points,
+        level: userData.level,
+        badges: userData.badges,
+        avatarUrl: userData.avatar_url,
+        token: crypto.randomBytes(32).toString('hex'), // Simple token
         tokenExpiration: Date.now() + TOKEN_EXPIRATION_TIME
       };
       
-      setUser(userWithExpiration);
-      localStorage.setItem("user", JSON.stringify(userWithExpiration));
+      setUser(formattedUser);
+      localStorage.setItem("user", JSON.stringify(formattedUser));
 
       toast({
         title: "Successfully signed in",
-        description: `Welcome back, ${userData.displayName}!`,
+        description: `Welcome back, ${formattedUser.displayName}!`,
       });
 
       return true;
@@ -174,38 +194,94 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
 
-      const response = await fetch("/api/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, email, password, displayName }),
-      });
+      // Check if username exists
+      const { data: existingUsername } = await supabase
+        .from('users')
+        .select('id')
+        .eq('username', username)
+        .single();
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (existingUsername) {
         toast({
           title: "Registration failed",
-          description: errorData.error || "Error during registration.",
+          description: "Username already exists.",
           variant: "destructive",
         });
         return false;
       }
 
-      const userData = await response.json();
-      
-      // Add token expiration
-      const userWithExpiration = {
-        ...userData,
+      // Check if email exists
+      const { data: existingEmail } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', email)
+        .single();
+
+      if (existingEmail) {
+        toast({
+          title: "Registration failed",
+          description: "Email already exists.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Create password hash
+      const salt = crypto.randomBytes(16).toString('hex');
+      const passwordHash = crypto
+        .pbkdf2Sync(password, salt, 1000, 64, 'sha512')
+        .toString('hex');
+
+      const userId = `user_${Date.now()}`;
+      const newUser = {
+        id: userId,
+        username,
+        email,
+        display_name: displayName || username,
+        password_hash: passwordHash,
+        salt,
+        points: 10, // Starting points
+        level: 1,
+        badges: ["newcomer"], // Newcomer badge
+        created_at: new Date().toISOString(),
+        avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${username}`, // Generated avatar
+      };
+
+      // Insert user into database
+      const { error: insertError } = await supabase
+        .from('users')
+        .insert(newUser);
+
+      if (insertError) {
+        console.error("Error inserting user:", insertError);
+        toast({
+          title: "Registration failed",
+          description: "Error creating user account.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Format the user object for the frontend
+      const formattedUser: User = {
+        id: newUser.id,
+        username: newUser.username,
+        displayName: newUser.display_name,
+        email: newUser.email,
+        points: newUser.points,
+        level: newUser.level,
+        badges: newUser.badges,
+        avatarUrl: newUser.avatar_url,
+        token: crypto.randomBytes(32).toString('hex'),
         tokenExpiration: Date.now() + TOKEN_EXPIRATION_TIME
       };
       
-      setUser(userWithExpiration);
-      localStorage.setItem("user", JSON.stringify(userWithExpiration));
+      setUser(formattedUser);
+      localStorage.setItem("user", JSON.stringify(formattedUser));
 
       toast({
         title: "Registration successful",
-        description: `Welcome, ${userData.displayName}!`,
+        description: `Welcome, ${formattedUser.displayName}!`,
       });
 
       return true;
@@ -242,34 +318,79 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      const response = await fetch("/api/users", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id: user.id, ...userData }),
-      });
+      const updates: Record<string, any> = {};
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      // Map user data to database column names
+      if (userData.displayName) updates.display_name = userData.displayName;
+      if (userData.email) updates.email = userData.email;
+      if (userData.avatarUrl) updates.avatar_url = userData.avatarUrl;
+
+      // Handle password update separately if provided
+      if (userData.currentPassword && userData.newPassword) {
+        // Get current user data for password verification
+        const { data: currentUserData, error: userError } = await supabase
+          .from('users')
+          .select('salt, password_hash')
+          .eq('id', user.id)
+          .single();
+
+        if (userError || !currentUserData) {
+          toast({
+            title: "Update failed",
+            description: "Error verifying current password.",
+            variant: "destructive",
+          });
+          return false;
+        }
+
+        // Verify current password
+        const hashedCurrentPassword = crypto
+          .pbkdf2Sync(userData.currentPassword, currentUserData.salt, 1000, 64, 'sha512')
+          .toString('hex');
+
+        if (hashedCurrentPassword !== currentUserData.password_hash) {
+          toast({
+            title: "Update failed",
+            description: "Current password is incorrect.",
+            variant: "destructive",
+          });
+          return false;
+        }
+
+        // Create new password hash
+        const newSalt = crypto.randomBytes(16).toString('hex');
+        const newPasswordHash = crypto
+          .pbkdf2Sync(userData.newPassword, newSalt, 1000, 64, 'sha512')
+          .toString('hex');
+
+        updates.salt = newSalt;
+        updates.password_hash = newPasswordHash;
+      }
+
+      // Update user in database
+      const { error: updateError } = await supabase
+        .from('users')
+        .update(updates)
+        .eq('id', user.id);
+
+      if (updateError) {
         toast({
           title: "Update failed",
-          description:
-            errorData.error || "Error updating profile.",
+          description: "Error updating profile.",
           variant: "destructive",
         });
         return false;
       }
 
-      const updatedUserData = await response.json();
-      const newUserData = { 
-        ...user, 
-        ...updatedUserData,
+      // Update the local user state with new values
+      const updatedUser = {
+        ...user,
+        ...userData,
         tokenExpiration: user.tokenExpiration // Preserve token expiration
       };
 
-      setUser(newUserData);
-      localStorage.setItem("user", JSON.stringify(newUserData));
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
 
       toast({
         title: "Profile updated",

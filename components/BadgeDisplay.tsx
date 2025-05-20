@@ -13,6 +13,7 @@ import {
   Clock,
   User,
   BookOpen,
+  MessageCircle,
 } from "lucide-react";
 import {
   Tooltip,
@@ -20,6 +21,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import supabase from "@/lib/supabase";
 
 interface Badge {
   id: string;
@@ -46,11 +48,16 @@ const BadgeDisplay: React.FC<BadgeDisplayProps> = ({
   useEffect(() => {
     const fetchBadges = async () => {
       try {
-        const response = await fetch("/api/badges");
-        if (response.ok) {
-          const badgesData = await response.json();
-          setBadges(badgesData);
+        const { data, error } = await supabase
+          .from('badges')
+          .select('*');
+        
+        if (error) {
+          console.error("Error fetching badges:", error);
+          return;
         }
+        
+        setBadges(data || []);
       } catch (error) {
         console.error("Error fetching badges:", error);
       } finally {
@@ -98,6 +105,8 @@ const BadgeDisplay: React.FC<BadgeDisplayProps> = ({
         return <User {...iconProps} />;
       case "BookOpen":
         return <BookOpen {...iconProps} />;
+      case "MessageCircle":
+        return <MessageCircle {...iconProps} />;
       default:
         return <Award {...iconProps} />;
     }
@@ -111,7 +120,7 @@ const BadgeDisplay: React.FC<BadgeDisplayProps> = ({
   if (badgesToDisplay.length === 0) {
     return (
       <div className="py-4 text-center">
-        <p className="text-gray-400">Noch keine Abzeichen freigeschaltet.</p>
+        <p className="text-gray-400">No badges unlocked yet.</p>
       </div>
     );
   }
@@ -162,11 +171,11 @@ const BadgeDisplay: React.FC<BadgeDisplayProps> = ({
                   </div>
                   <p className="text-sm text-gray-300">{badge.description}</p>
                   <p className="text-xs text-purple-400">
-                    +{badge.points} Punkte
+                    +{badge.points} points
                   </p>
                   {!isEarned && showUnearned && (
                     <p className="text-xs italic text-gray-400 pt-1">
-                      Noch nicht freigeschaltet
+                      Not yet unlocked
                     </p>
                   )}
                 </div>

@@ -1,4 +1,3 @@
-// Improved SavedContext.tsx with proper state management and synchronization
 "use client"
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
@@ -92,7 +91,7 @@ export const SavedProvider = ({ children }: { children: ReactNode }) => {
 export const useSaved = () => {
   const context = useContext(SavedContext);
   if (!context) {
-    throw new Error('useSaved must be used within a SavedProvider');
+    throw new Error("useSaved must be used within a SavedProvider");
   }
   return context;
 };

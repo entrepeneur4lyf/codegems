@@ -119,14 +119,14 @@ const UserProfile = () => {
       if (success) {
         setUpdateMessage({
           type: "success",
-          text: "Dein Profil wurde erfolgreich aktualisiert.",
+          text: "Your profile has been successfully updated.",
         });
       }
     } catch (error) {
       console.error("Error updating profile:", error);
       setUpdateMessage({
         type: "error",
-        text: "Fehler beim Aktualisieren des Profils.",
+        text: "Error updating profile.",
       });
     } finally {
       setIsUpdating(false);
@@ -142,7 +142,7 @@ const UserProfile = () => {
     if (newPassword !== confirmNewPassword) {
       setUpdateMessage({
         type: "error",
-        text: "Die neuen Passwörter stimmen nicht überein.",
+        text: "New passwords don't match.",
       });
       return;
     }
@@ -150,7 +150,7 @@ const UserProfile = () => {
     try {
       setIsUpdating(true);
 
-      // Anstatt die Passwortänderung über updateUser zu senden, rufen wir direkt die API auf
+      // Send password change directly to API
       const response = await fetch("/api/users", {
         method: "PUT",
         headers: {
@@ -166,7 +166,7 @@ const UserProfile = () => {
       if (response.ok) {
         setUpdateMessage({
           type: "success",
-          text: "Dein Passwort wurde erfolgreich aktualisiert.",
+          text: "Your password has been successfully updated.",
         });
 
         // Clear password fields
@@ -177,14 +177,14 @@ const UserProfile = () => {
         const errorData = await response.json();
         setUpdateMessage({
           type: "error",
-          text: errorData.error || "Fehler beim Aktualisieren des Passworts.",
+          text: errorData.error || "Error updating password.",
         });
       }
     } catch (error) {
       console.error("Error updating password:", error);
       setUpdateMessage({
         type: "error",
-        text: "Fehler beim Aktualisieren des Passworts.",
+        text: "Error updating password.",
       });
     } finally {
       setIsUpdating(false);
@@ -202,15 +202,15 @@ const UserProfile = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 mt-10">
         <div className="container mx-auto px-4">
           <div className="max-w-md mx-auto bg-slate-800/50 border border-slate-700 rounded-lg p-8 text-center">
-            <h1 className="text-2xl font-bold text-white mb-4">Profil</h1>
+            <h1 className="text-2xl font-bold text-white mb-4">Profile</h1>
             <p className="text-gray-400 mb-6">
-              Du musst angemeldet sein, um dein Profil zu sehen.
+              You need to be signed in to view your profile.
             </p>
             <Button
               onClick={() => setShowAuthDialog(true)}
               className="bg-purple-500 hover:bg-purple-600 text-white"
             >
-              Anmelden
+              Sign In
             </Button>
 
             <AuthenticationDialog
@@ -233,7 +233,7 @@ const UserProfile = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-3xl font-bold text-white text-center mb-8">
-            Dein Profil
+            Your Profile
           </h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -271,7 +271,7 @@ const UserProfile = () => {
                     </div>
 
                     <div className="text-sm text-gray-400 mb-2">
-                      {user.points} Punkte ({pointsToNextLevel} bis Level{" "}
+                      {user.points} points ({pointsToNextLevel} to Level{" "}
                       {user.level + 1})
                     </div>
 
@@ -287,7 +287,7 @@ const UserProfile = () => {
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <Star className="text-yellow-500 w-4 h-4" />
-                        <span className="text-sm">Bewertungen</span>
+                        <span className="text-sm">Ratings</span>
                       </div>
                       <span className="font-semibold">{stats.ratings}</span>
                     </div>
@@ -295,7 +295,7 @@ const UserProfile = () => {
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <MessageSquare className="text-blue-500 w-4 h-4" />
-                        <span className="text-sm">Kommentare</span>
+                        <span className="text-sm">Comments</span>
                       </div>
                       <span className="font-semibold">{stats.comments}</span>
                     </div>
@@ -313,7 +313,7 @@ const UserProfile = () => {
 
               <Card className="bg-slate-800/50 border-slate-700 text-white mt-6">
                 <CardHeader>
-                  <CardTitle className="text-lg">Deine Abzeichen</CardTitle>
+                  <CardTitle className="text-lg">Your Badges</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <BadgeDisplay userBadges={user.badges} />
@@ -324,7 +324,7 @@ const UserProfile = () => {
                     className="w-full bg-slate-700 hover:bg-slate-600 border-slate-600 text-white"
                     onClick={() => router.push("/badges")}
                   >
-                    Alle Abzeichen anzeigen
+                    View All Badges
                   </Button>
                 </CardFooter>
               </Card>
@@ -334,9 +334,9 @@ const UserProfile = () => {
             <div className="lg:col-span-3">
               <Card className="bg-slate-800/50 border-slate-700 text-white">
                 <CardHeader>
-                  <CardTitle>Profileinstellungen</CardTitle>
+                  <CardTitle>Profile Settings</CardTitle>
                   <CardDescription className="text-gray-400">
-                    Aktualisiere deine persönlichen Informationen
+                    Update your personal information
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -346,13 +346,13 @@ const UserProfile = () => {
                         value="profile"
                         className="data-[state=active]:bg-slate-900"
                       >
-                        Profil
+                        Profile
                       </TabsTrigger>
                       <TabsTrigger
                         value="security"
                         className="data-[state=active]:bg-slate-900"
                       >
-                        Sicherheit
+                        Security
                       </TabsTrigger>
                     </TabsList>
 
@@ -372,8 +372,8 @@ const UserProfile = () => {
                           )}
                           <AlertTitle>
                             {updateMessage.type === "success"
-                              ? "Erfolg!"
-                              : "Fehler"}
+                              ? "Success!"
+                              : "Error"}
                           </AlertTitle>
                           <AlertDescription>
                             {updateMessage.text}
@@ -386,24 +386,24 @@ const UserProfile = () => {
                         className="space-y-4"
                       >
                         <div className="space-y-2">
-                          <Label htmlFor="displayName">Anzeigename</Label>
+                          <Label htmlFor="displayName">Display Name</Label>
                           <Input
                             id="displayName"
                             value={displayName}
                             onChange={(e) => setDisplayName(e.target.value)}
-                            placeholder="Anzeigename"
+                            placeholder="Display name"
                             className="bg-slate-700 border-slate-600 text-white"
                           />
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="email">E-Mail</Label>
+                          <Label htmlFor="email">Email</Label>
                           <Input
                             id="email"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="E-Mail-Adresse"
+                            placeholder="Email address"
                             className="bg-slate-700 border-slate-600 text-white"
                           />
                         </div>
@@ -417,10 +417,10 @@ const UserProfile = () => {
                             {isUpdating ? (
                               <span className="flex items-center gap-2">
                                 <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                                Wird aktualisiert...
+                                Updating...
                               </span>
                             ) : (
-                              "Profil aktualisieren"
+                              "Update Profile"
                             )}
                           </Button>
                         </div>
@@ -443,8 +443,8 @@ const UserProfile = () => {
                           )}
                           <AlertTitle>
                             {updateMessage.type === "success"
-                              ? "Erfolg!"
-                              : "Fehler"}
+                              ? "Success!"
+                              : "Error"}
                           </AlertTitle>
                           <AlertDescription>
                             {updateMessage.text}
@@ -458,33 +458,33 @@ const UserProfile = () => {
                       >
                         <div className="space-y-2">
                           <Label htmlFor="currentPassword">
-                            Aktuelles Passwort
+                            Current Password
                           </Label>
                           <Input
                             id="currentPassword"
                             type="password"
                             value={currentPassword}
                             onChange={(e) => setCurrentPassword(e.target.value)}
-                            placeholder="Dein aktuelles Passwort"
+                            placeholder="Your current password"
                             className="bg-slate-700 border-slate-600 text-white"
                           />
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="newPassword">Neues Passwort</Label>
+                          <Label htmlFor="newPassword">New Password</Label>
                           <Input
                             id="newPassword"
                             type="password"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            placeholder="Neues Passwort"
+                            placeholder="New password"
                             className="bg-slate-700 border-slate-600 text-white"
                           />
                         </div>
 
                         <div className="space-y-2">
                           <Label htmlFor="confirmNewPassword">
-                            Neues Passwort bestätigen
+                            Confirm New Password
                           </Label>
                           <Input
                             id="confirmNewPassword"
@@ -493,7 +493,7 @@ const UserProfile = () => {
                             onChange={(e) =>
                               setConfirmNewPassword(e.target.value)
                             }
-                            placeholder="Neues Passwort bestätigen"
+                            placeholder="Confirm new password"
                             className="bg-slate-700 border-slate-600 text-white"
                           />
                         </div>
@@ -507,10 +507,10 @@ const UserProfile = () => {
                             {isUpdating ? (
                               <span className="flex items-center gap-2">
                                 <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                                Wird aktualisiert...
+                                Updating...
                               </span>
                             ) : (
-                              "Passwort ändern"
+                              "Change Password"
                             )}
                           </Button>
                         </div>

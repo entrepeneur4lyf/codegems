@@ -1,49 +1,5 @@
-// Improved API routes with error handling and concurrency management
-// File: app/api/comments/route.tsx
-
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
-import { promises as fsPromises } from 'fs';
-
-const commentsFilePath = path.join(process.cwd(), "data", "comments.json");
-const usersFilePath = path.join(process.cwd(), "data", "users.json");
-
-// Helper functions with proper error handling and file locking for concurrency
-const getComments = async () => {
-  try {
-    // Create the file if it doesn't exist
-    if (!fs.existsSync(commentsFilePath)) {
-      await fsPromises.mkdir(path.dirname(commentsFilePath), { recursive: true });
-      await fsPromises.writeFile(commentsFilePath, JSON.stringify([]));
-      return [];
-    }
-    
-    const data = await fsPromises.readFile(commentsFilePath, "utf8");
-    return JSON.parse(data);
-  } catch (error) {
-    console.error("Error reading comments file:", error);
-    // Return empty array in case of error
-    return [];
-  }
-};
-
-const saveComments = async (comments: any) => {
-  try {
-    // Ensure the directory exists
-    await fsPromises.mkdir(path.dirname(commentsFilePath), { recursive: true });
-    
-    // Write to a temporary file first to prevent corrupting the file in case of error
-    const tempFilePath = `${commentsFilePath}.temp`;
-    await fsPromises.writeFile(tempFilePath, JSON.stringify(comments, null, 2));
-    
-    // Rename the temporary file to the actual file (atomic operation)
-    await fsPromises.rename(tempFilePath, commentsFilePath);
-  } catch (error) {
-    console.error("Error saving comments:", error);
-    throw error;
-  }
-};
+import supabase from "@/lib/supabase";
 
 // GET: Fetch comments
 export async function GET(request: Request) {
@@ -52,23 +8,27 @@ export async function GET(request: Request) {
   const userId = searchParams.get("userId");
 
   try {
-    const comments = await getComments();
+    let query = supabase.from('comments').select('*');
 
     if (projectName) {
-      const projectComments = comments.filter(
-        (c: { projectName: string }) => c.projectName === projectName
-      );
-      return NextResponse.json(projectComments);
+      query = query.eq('project_name', projectName);
     }
 
     if (userId) {
-      const userComments = comments.filter(
-        (c: { userId: string }) => c.userId === userId
-      );
-      return NextResponse.json(userComments);
+      query = query.eq('user_id', userId);
     }
 
-    return NextResponse.json(comments);
+    const { data: comments, error } = await query;
+
+    if (error) {
+      console.error("Error getting comments:", error);
+      return NextResponse.json(
+        { error: "Failed to get comments. Please try again." },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(comments || []);
   } catch (error) {
     console.error("Error getting comments:", error);
     return NextResponse.json(
@@ -107,38 +67,28 @@ export async function POST(request: Request) {
     }
 
     // Validate user exists
-    try {
-      if (fs.existsSync(usersFilePath)) {
-        const usersData = await fsPromises.readFile(usersFilePath, "utf8");
-        const users = JSON.parse(usersData);
-        const userExists = users.some((u: { id: string }) => u.id === userId);
-        
-        if (!userExists) {
-          return NextResponse.json(
-            { error: "User not found" },
-            { status: 404 }
-          );
-        }
-      } else {
-        return NextResponse.json(
-          { error: "User database not found" },
-          { status: 500 }
-        );
-      }
-    } catch (userError) {
-      console.error("Error validating user:", userError);
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !user) {
       return NextResponse.json(
-        { error: "Error validating user" },
-        { status: 500 }
+        { error: "User not found" },
+        { status: 404 }
       );
     }
 
-    const comments = await getComments();
-    
     // Check if parentId exists (if provided)
     if (parentId) {
-      const parentExists = comments.some((c: { id: string }) => c.id === parentId);
-      if (!parentExists) {
+      const { data: parentComment, error: parentError } = await supabase
+        .from('comments')
+        .select('id')
+        .eq('id', parentId)
+        .single();
+
+      if (parentError || !parentComment) {
         return NextResponse.json(
           { error: "Parent comment not found" },
           { status: 404 }
@@ -148,32 +98,39 @@ export async function POST(request: Request) {
 
     const newComment = {
       id: `comment_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-      projectName,
-      userId,
+      project_name: projectName,
+      user_id: userId,
       text: text.trim(),
-      parentId: parentId || null,
+      parent_id: parentId || null,
       likes: [],
-      createdAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
     };
 
-    comments.push(newComment);
-    await saveComments(comments);
+    const { error: insertError } = await supabase
+      .from('comments')
+      .insert(newComment);
+
+    if (insertError) {
+      return NextResponse.json(
+        { error: "Failed to create comment" },
+        { status: 500 }
+      );
+    }
 
     // Award points for new comment
-    try {
-      if (fs.existsSync(usersFilePath)) {
-        const usersData = await fsPromises.readFile(usersFilePath, "utf8");
-        const users = JSON.parse(usersData);
-        const userIndex = users.findIndex((u: { id: any }) => u.id === userId);
+    const { data: userData, error: getUserError } = await supabase
+      .from('users')
+      .select('points, badges')
+      .eq('id', userId)
+      .single();
 
-        if (userIndex !== -1) {
-          users[userIndex].points = (users[userIndex].points || 0) + 2;
-          await fsPromises.writeFile(usersFilePath, JSON.stringify(users, null, 2));
-        }
-      }
-    } catch (pointsError) {
-      console.error("Error updating user points:", pointsError);
-      // Continue execution - points update is not critical
+    if (!getUserError && userData) {
+      await supabase
+        .from('users')
+        .update({
+          points: (userData.points || 0) + 2
+        })
+        .eq('id', userId);
     }
 
     return NextResponse.json(newComment);
@@ -221,40 +178,62 @@ export async function PUT(request: Request) {
       );
     }
 
-    const comments = await getComments();
-    const commentIndex = comments.findIndex(
-      (c: { id: any }) => c.id === commentId
-    );
+    // Get current comment
+    const { data: comment, error: getCommentError } = await supabase
+      .from('comments')
+      .select('*')
+      .eq('id', commentId)
+      .single();
 
-    if (commentIndex === -1) {
-      return NextResponse.json({ error: "Comment not found" }, { status: 404 });
+    if (getCommentError || !comment) {
+      return NextResponse.json(
+        { error: "Comment not found" },
+        { status: 404 }
+      );
     }
 
     // Handle different actions
+    let updates = {};
     if (action === "like") {
-      if (!comments[commentIndex].likes.includes(userId)) {
-        comments[commentIndex].likes.push(userId);
+      const likes = comment.likes || [];
+      if (!likes.includes(userId)) {
+        likes.push(userId);
       }
+      updates = { likes };
     } else if (action === "unlike") {
-      comments[commentIndex].likes = comments[commentIndex].likes.filter(
-        (id: any) => id !== userId
-      );
+      const likes = (comment.likes || []).filter((id: string) => id !== userId);
+      updates = { likes };
     } else if (action === "edit") {
       // Verify the user is the author of the comment
-      if (comments[commentIndex].userId !== userId) {
+      if (comment.user_id !== userId) {
         return NextResponse.json(
           { error: "Not authorized to edit this comment" },
           { status: 403 }
         );
       }
       
-      comments[commentIndex].text = text.trim();
-      comments[commentIndex].edited = true;
-      comments[commentIndex].updatedAt = new Date().toISOString();
+      updates = {
+        text: text.trim(),
+        edited: true,
+        updated_at: new Date().toISOString()
+      };
     }
 
-    await saveComments(comments);
-    return NextResponse.json(comments[commentIndex]);
+    const { data: updatedComment, error: updateError } = await supabase
+      .from('comments')
+      .update(updates)
+      .eq('id', commentId)
+      .select()
+      .single();
+
+    if (updateError) {
+      return NextResponse.json(
+        { error: "Failed to update comment" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(updatedComment);
   } catch (error) {
     console.error("Error updating comment:", error);
     return NextResponse.json(
@@ -278,32 +257,46 @@ export async function DELETE(request: Request) {
   }
 
   try {
-    const comments = await getComments();
-    const commentIndex = comments.findIndex(
-      (c: { id: string }) => c.id === commentId
-    );
+    // Check if comment exists and if user is the author
+    const { data: comment, error: getCommentError } = await supabase
+      .from('comments')
+      .select('user_id')
+      .eq('id', commentId)
+      .single();
 
-    if (commentIndex === -1) {
-      return NextResponse.json({ error: "Comment not found" }, { status: 404 });
+    if (getCommentError || !comment) {
+      return NextResponse.json(
+        { error: "Comment not found" },
+        { status: 404 }
+      );
     }
 
-    // Verify the user is the author of the comment
-    if (comments[commentIndex].userId !== userId) {
+    if (comment.user_id !== userId) {
       return NextResponse.json(
         { error: "Not authorized to delete this comment" },
         { status: 403 }
       );
     }
 
-    // Remove the comment
-    comments.splice(commentIndex, 1);
-    
-    // Also remove all replies to this comment
-    const updatedComments = comments.filter(
-      (c: { parentId: string | null }) => c.parentId !== commentId
-    );
-    
-    await saveComments(updatedComments);
+    // Delete the comment
+    const { error: deleteError } = await supabase
+      .from('comments')
+      .delete()
+      .eq('id', commentId);
+
+    if (deleteError) {
+      return NextResponse.json(
+        { error: "Failed to delete comment" },
+        { status: 500 }
+      );
+    }
+
+    // Delete all replies to this comment
+    await supabase
+      .from('comments')
+      .delete()
+      .eq('parent_id', commentId);
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting comment:", error);

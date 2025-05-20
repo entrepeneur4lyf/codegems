@@ -27,6 +27,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import supabase from "@/lib/supabase";
 
 interface CommentSectionProps {
   projectName: string;
@@ -34,20 +35,21 @@ interface CommentSectionProps {
 
 interface Comment {
   id: string;
-  projectName: string;
-  userId: string;
+  project_name: string;
+  user_id: string;
   text: string;
-  parentId: string | null;
+  parent_id: string | null;
   likes: string[];
-  createdAt: string;
+  created_at: string;
   edited?: boolean;
+  user?: User;
 }
 
 interface User {
   id: string;
   username: string;
-  displayName: string;
-  avatarUrl: string;
+  display_name: string;
+  avatar_url: string;
 }
 
 interface Badge {
@@ -76,49 +78,67 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
 
-  // Kommentare für dieses Projekt laden
+  // Function to fetch user data for a list of user IDs
+  const fetchUserData = async (userIds: string[]) => {
+    if (!userIds.length) return {};
+
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, username, display_name, avatar_url')
+        .in('id', userIds);
+      
+      if (error) {
+        console.error("Error fetching user data:", error);
+        return {};
+      }
+
+      const usersMap: Record<string, User> = {};
+      data.forEach((userData: User) => {
+        usersMap[userData.id] = userData;
+      });
+
+      return usersMap;
+    } catch (error) {
+      console.error("Error in fetchUserData:", error);
+      return {};
+    }
+  };
+
+  // Load comments for this project
   useEffect(() => {
     const fetchComments = async () => {
+      setIsLoading(true);
       try {
-        const response = await fetch(
-          `/api/comments?project=${encodeURIComponent(projectName)}`
-        );
+        const response = await fetch(`/api/comments?project=${encodeURIComponent(projectName)}`);
+        
         if (response.ok) {
           const commentsData = await response.json();
-          setComments(commentsData);
-
-          // Benutzerinformationen für alle Kommentare laden
-          const userIds = [
-            ...new Set(commentsData.map((c: Comment) => c.userId)),
-          ];
-          const userDetails = await Promise.all(
-            userIds.map(async (id) => {
-              const userResponse = await fetch(`/api/users?id=${id}`);
-              if (userResponse.ok) {
-                return await userResponse.json();
-              }
-              return null;
-            })
-          );
-
-          const usersMap: Record<string, User> = {};
-          userDetails.filter(Boolean).forEach((u: User) => {
-            usersMap[u.id] = {
-              id: u.id,
-              username: u.username,
-              displayName: u.displayName,
-              avatarUrl: u.avatarUrl,
-            };
-          });
-
-          setUsers(usersMap);
+          
+          // Extract unique user IDs
+          const userIds = Array.from(new Set(commentsData.map((c: Comment) => c.user_id)));
+          
+          // Fetch user data for all comments in a single request
+          const usersData = await fetchUserData(userIds);
+          setUsers(usersData);
+          
+          // Attach user data to comments
+          const enhancedComments = commentsData.map((comment: Comment) => ({
+            ...comment,
+            user: usersData[comment.user_id]
+          }));
+          
+          setComments(enhancedComments);
         }
       } catch (error) {
         console.error("Error fetching comments:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -128,9 +148,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
   const handleCommentSubmit = async () => {
     if (!isAuthenticated || !user) {
       toast({
-        title: "Anmeldung erforderlich",
-        description:
-          "Du musst angemeldet sein, um einen Kommentar zu schreiben.",
+        title: "Sign-in required",
+        description: "You must be signed in to write a comment.",
         variant: "destructive",
       });
       return;
@@ -138,8 +157,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
 
     if (!newComment.trim()) {
       toast({
-        title: "Leerer Kommentar",
-        description: "Bitte gib einen Kommentar ein.",
+        title: "Empty comment",
+        description: "Please enter a comment.",
         variant: "destructive",
       });
       return;
@@ -163,18 +182,29 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
       if (response.ok) {
         const newCommentData = await response.json();
 
-        // Neuen Kommentar zur lokalen Liste hinzufügen
-        setComments((prev) => [...prev, newCommentData]);
+        // Create enhanced comment with user data
+        const enhancedComment = {
+          ...newCommentData,
+          user: {
+            id: user.id,
+            username: user.username,
+            display_name: user.displayName,
+            avatar_url: user.avatarUrl
+          }
+        };
 
-        // Kommentarfeld zurücksetzen
+        // Add new comment to the list
+        setComments((prev) => [enhancedComment, ...prev]);
+
+        // Reset comment field
         setNewComment("");
 
         toast({
-          title: "Kommentar gesendet",
-          description: "Dein Kommentar wurde erfolgreich gesendet.",
+          title: "Comment sent",
+          description: "Your comment has been successfully posted.",
         });
 
-        // Abzeichen-Check auslösen
+        // Check for badges
         try {
           const badgeResponse = await fetch("/api/users?action=check_badges", {
             method: "POST",
@@ -192,16 +222,16 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
             if (badgeData.earnedBadges && badgeData.earnedBadges.length > 0) {
               badgeData.earnedBadges.forEach((badge: Badge) => {
                 toast({
-                  title: "Neues Abzeichen freigeschaltet!",
-                  description: `Du hast das Abzeichen "${badge.name}" erhalten: ${badge.description}`,
+                  title: "New badge unlocked!",
+                  description: `You've earned the "${badge.name}" badge: ${badge.description}`,
                 });
               });
             }
 
             if (badgeData.levelUp) {
               toast({
-                title: "Level-Aufstieg!",
-                description: `Glückwunsch! Du bist auf Level ${badgeData.currentLevel} aufgestiegen.`,
+                title: "Level up!",
+                description: `Congratulations! You've reached level ${badgeData.currentLevel}.`,
               });
             }
           }
@@ -211,16 +241,16 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
       } else {
         const errorData = await response.json();
         toast({
-          title: "Fehler",
-          description: errorData.error || "Fehler beim Senden des Kommentars.",
+          title: "Error",
+          description: errorData.error || "Error sending comment.",
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Error submitting comment:", error);
       toast({
-        title: "Fehler",
-        description: "Ein unerwarteter Fehler ist aufgetreten.",
+        title: "Error",
+        description: "An unexpected error occurred.",
         variant: "destructive",
       });
     } finally {
@@ -233,8 +263,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
 
     if (!replyText.trim()) {
       toast({
-        title: "Leere Antwort",
-        description: "Bitte gib eine Antwort ein.",
+        title: "Empty reply",
+        description: "Please enter a reply.",
         variant: "destructive",
       });
       return;
@@ -259,30 +289,41 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
       if (response.ok) {
         const newReplyData = await response.json();
 
-        // Neue Antwort zur lokalen Liste hinzufügen
-        setComments((prev) => [...prev, newReplyData]);
+        // Create enhanced reply with user data
+        const enhancedReply = {
+          ...newReplyData,
+          user: {
+            id: user.id,
+            username: user.username,
+            display_name: user.displayName,
+            avatar_url: user.avatarUrl
+          }
+        };
 
-        // Antwortformular zurücksetzen
+        // Add new reply to the list
+        setComments((prev) => [...prev, enhancedReply]);
+
+        // Reset reply form
         setReplyToComment(null);
         setReplyText("");
 
         toast({
-          title: "Antwort gesendet",
-          description: "Deine Antwort wurde erfolgreich gesendet.",
+          title: "Reply sent",
+          description: "Your reply has been successfully posted.",
         });
       } else {
         const errorData = await response.json();
         toast({
-          title: "Fehler",
-          description: errorData.error || "Fehler beim Senden der Antwort.",
+          title: "Error",
+          description: errorData.error || "Error sending reply.",
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Error submitting reply:", error);
       toast({
-        title: "Fehler",
-        description: "Ein unerwarteter Fehler ist aufgetreten.",
+        title: "Error",
+        description: "An unexpected error occurred.",
         variant: "destructive",
       });
     } finally {
@@ -295,8 +336,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
 
     if (!editText.trim()) {
       toast({
-        title: "Leerer Kommentar",
-        description: "Bitte gib einen Kommentar ein.",
+        title: "Empty comment",
+        description: "Please enter a comment.",
         variant: "destructive",
       });
       return;
@@ -321,33 +362,32 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
       if (response.ok) {
         const updatedComment = await response.json();
 
-        // Kommentar in der lokalen Liste aktualisieren
+        // Update comment in the list
         setComments((prev) =>
-          prev.map((c) => (c.id === editingComment ? updatedComment : c))
+          prev.map((c) => (c.id === editingComment ? { ...updatedComment, user: c.user } : c))
         );
 
-        // Bearbeitungsformular zurücksetzen
+        // Reset edit form
         setEditingComment(null);
         setEditText("");
 
         toast({
-          title: "Kommentar aktualisiert",
-          description: "Dein Kommentar wurde erfolgreich aktualisiert.",
+          title: "Comment updated",
+          description: "Your comment has been successfully updated.",
         });
       } else {
         const errorData = await response.json();
         toast({
-          title: "Fehler",
-          description:
-            errorData.error || "Fehler beim Aktualisieren des Kommentars.",
+          title: "Error",
+          description: errorData.error || "Error updating comment.",
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Error updating comment:", error);
       toast({
-        title: "Fehler",
-        description: "Ein unerwarteter Fehler ist aufgetreten.",
+        title: "Error",
+        description: "An unexpected error occurred.",
         variant: "destructive",
       });
     } finally {
@@ -367,10 +407,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
       );
 
       if (response.ok) {
-        // Kommentar und alle Antworten aus der lokalen Liste entfernen
+        // Remove comment and all replies from the list
         setComments((prev) =>
           prev.filter(
-            (c) => c.id !== commentToDelete && c.parentId !== commentToDelete
+            (c) => c.id !== commentToDelete && c.parent_id !== commentToDelete
           )
         );
 
@@ -378,22 +418,22 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
         setCommentToDelete(null);
 
         toast({
-          title: "Kommentar gelöscht",
-          description: "Dein Kommentar wurde erfolgreich gelöscht.",
+          title: "Comment deleted",
+          description: "Your comment has been successfully deleted.",
         });
       } else {
         const errorData = await response.json();
         toast({
-          title: "Fehler",
-          description: errorData.error || "Fehler beim Löschen des Kommentars.",
+          title: "Error",
+          description: errorData.error || "Error deleting comment.",
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Error deleting comment:", error);
       toast({
-        title: "Fehler",
-        description: "Ein unerwarteter Fehler ist aufgetreten.",
+        title: "Error",
+        description: "An unexpected error occurred.",
         variant: "destructive",
       });
     }
@@ -402,8 +442,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
   const handleLike = async (commentId: string) => {
     if (!isAuthenticated || !user) {
       toast({
-        title: "Anmeldung erforderlich",
-        description: "Du musst angemeldet sein, um einen Kommentar zu liken.",
+        title: "Sign-in required",
+        description: "You must be signed in to like a comment.",
         variant: "destructive",
       });
       return;
@@ -430,46 +470,44 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
       if (response.ok) {
         const updatedComment = await response.json();
 
-        // Kommentar in der lokalen Liste aktualisieren
+        // Update comment in the list
         setComments((prev) =>
-          prev.map((c) => (c.id === commentId ? updatedComment : c))
+          prev.map((c) => (c.id === commentId ? { ...updatedComment, user: c.user } : c))
         );
       } else {
         const errorData = await response.json();
         toast({
-          title: "Fehler",
+          title: "Error",
           description:
             errorData.error ||
-            `Fehler beim ${
-              action === "like" ? "Liken" : "Entliken"
-            } des Kommentars.`,
+            `Error ${action === "like" ? "liking" : "unliking"} comment.`,
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Error liking comment:", error);
       toast({
-        title: "Fehler",
-        description: "Ein unerwarteter Fehler ist aufgetreten.",
+        title: "Error",
+        description: "An unexpected error occurred.",
         variant: "destructive",
       });
     }
   };
 
-  // Kommentare nach Erstellungsdatum sortieren und in Threads gruppieren
+  // Sort comments by creation date and group into threads
   const rootComments = comments
-    .filter((c) => !c.parentId)
+    .filter((c) => !c.parent_id)
     .sort(
       (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
 
   const getReplies = (commentId: string) => {
     return comments
-      .filter((c) => c.parentId === commentId)
+      .filter((c) => c.parent_id === commentId)
       .sort(
         (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       );
   };
 
@@ -479,7 +517,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
   };
 
   const renderComment = (comment: Comment, isReply = false) => {
-    const commentUser = users[comment.userId];
+    const commentUser = comment.user;
 
     return (
       <div
@@ -492,9 +530,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
           <div className="flex items-center gap-3">
             {commentUser && (
               <>
-                {commentUser && commentUser.avatarUrl ? (
+                {commentUser.avatar_url ? (
                   <img
-                    src={commentUser.avatarUrl}
+                    src={commentUser.avatar_url}
                     alt={commentUser.username}
                     className="w-8 h-8 rounded-full"
                   />
@@ -502,23 +540,23 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-white">
-                      {commentUser.displayName}
+                      {commentUser.display_name}
                     </span>
-                    {comment.userId === user?.id && (
+                    {comment.user_id === user?.id && (
                       <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded">
-                        Du
+                        You
                       </span>
                     )}
                   </div>
                   <span className="text-xs text-gray-400">
-                    {formatDate(comment.createdAt)}
+                    {formatDate(comment.created_at)}
                   </span>
                 </div>
               </>
             )}
           </div>
 
-          {comment.userId === user?.id && (
+          {comment.user_id === user?.id && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -537,7 +575,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
                   className="cursor-pointer flex items-center gap-2 hover:bg-slate-700"
                 >
                   <Edit className="h-4 w-4" />
-                  <span>Bearbeiten</span>
+                  <span>Edit</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
@@ -547,7 +585,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
                   className="cursor-pointer flex items-center gap-2 text-red-400 hover:bg-slate-700 hover:text-red-300"
                 >
                   <Trash2 className="h-4 w-4" />
-                  <span>Löschen</span>
+                  <span>Delete</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -570,14 +608,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
                 }}
                 className="bg-slate-700 text-white hover:bg-slate-600 border-slate-600"
               >
-                Abbrechen
+                Cancel
               </Button>
               <Button
                 onClick={handleEditSubmit}
                 disabled={isSubmitting}
                 className="bg-purple-500 hover:bg-purple-600 text-white"
               >
-                Speichern
+                Save
               </Button>
             </div>
           </div>
@@ -586,7 +624,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
             <p className="mt-2 text-gray-300">
               {comment.text}
               {comment.edited && (
-                <span className="text-xs text-gray-400 ml-2">(bearbeitet)</span>
+                <span className="text-xs text-gray-400 ml-2">(edited)</span>
               )}
             </p>
 
@@ -614,7 +652,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
                   className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-300"
                 >
                   <Reply className="h-4 w-4" />
-                  <span>Antworten</span>
+                  <span>Reply</span>
                 </button>
               )}
             </div>
@@ -624,7 +662,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
         {replyToComment === comment.id && (
           <div className="mt-3 space-y-2">
             <Textarea
-              placeholder="Schreibe eine Antwort..."
+              placeholder="Write a reply..."
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
               className="bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-400"
@@ -635,20 +673,20 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
                 onClick={() => setReplyToComment(null)}
                 className="bg-slate-700 text-white hover:bg-slate-600 border-slate-600"
               >
-                Abbrechen
+                Cancel
               </Button>
               <Button
                 onClick={handleReplySubmit}
                 disabled={isSubmitting}
                 className="bg-purple-500 hover:bg-purple-600 text-white"
               >
-                Antworten
+                Reply
               </Button>
             </div>
           </div>
         )}
 
-        {/* Antworten anzeigen */}
+        {/* Show replies */}
         {getReplies(comment.id).map((reply) => renderComment(reply, true))}
       </div>
     );
@@ -658,13 +696,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <MessageSquare className="text-purple-500" />
-        <h3 className="text-lg font-semibold text-white">Diskussion</h3>
+        <h3 className="text-lg font-semibold text-white">Discussion</h3>
       </div>
 
       {isAuthenticated ? (
         <div className="space-y-3">
           <Textarea
-            placeholder="Schreibe einen Kommentar..."
+            placeholder="Write a comment..."
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             className="min-h-24 bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-400"
@@ -676,21 +714,26 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
               disabled={isSubmitting}
               className="bg-purple-500 hover:bg-purple-600 text-white"
             >
-              {isSubmitting ? "Wird gesendet..." : "Kommentar senden"}
+              {isSubmitting ? "Sending..." : "Post Comment"}
             </Button>
           </div>
         </div>
       ) : (
         <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
           <p className="text-gray-300">
-            Melde dich an, um an der Diskussion teilzunehmen.
+            Sign in to join the discussion.
           </p>
         </div>
       )}
 
-      {comments.length === 0 ? (
+      {isLoading ? (
         <div className="py-8 text-center">
-          <p className="text-gray-400">Noch keine Kommentare. Sei der Erste!</p>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
+          <p className="mt-2 text-gray-400">Loading comments...</p>
+        </div>
+      ) : comments.length === 0 ? (
+        <div className="py-8 text-center">
+          <p className="text-gray-400">No comments yet. Be the first!</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -698,14 +741,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
         </div>
       )}
 
-      {/* Lösch-Dialog */}
+      {/* Delete confirmation dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent className="bg-slate-800 border-slate-700 text-white">
           <DialogHeader>
-            <DialogTitle>Kommentar löschen</DialogTitle>
+            <DialogTitle>Delete Comment</DialogTitle>
             <DialogDescription className="text-gray-400">
-              Bist du sicher, dass du diesen Kommentar löschen möchtest? Diese
-              Aktion kann nicht rückgängig gemacht werden.
+              Are you sure you want to delete this comment? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -714,13 +756,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectName }) => {
               onClick={() => setShowDeleteDialog(false)}
               className="bg-slate-700 text-white hover:bg-slate-600 border-slate-600"
             >
-              Abbrechen
+              Cancel
             </Button>
             <Button
               onClick={handleDeleteConfirm}
               className="bg-red-500 hover:bg-red-600 text-white"
             >
-              Löschen
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>

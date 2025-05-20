@@ -1,6 +1,3 @@
-// Enhanced Error Handling Component
-// This new component will be used throughout the application to provide consistent error handling
-
 import React from 'react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
